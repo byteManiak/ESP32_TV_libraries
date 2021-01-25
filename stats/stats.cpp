@@ -48,31 +48,15 @@ void printMemStats(VGA6Bit &vga)
 #endif
 
 #if defined(CONFIG_DEBUG_SHOW_FPS)
-static long timePrev;
+extern double timeDelta;
 
 void printFPS(VGA6Bit &vga)
 {
 	// Save text colors that were previously used
 	long f = vga.frontColor, b = vga.backColor;
 
-	// Get time delta
-	long timeNow = millis();
-	long frametime = timeNow - timePrev;
-
 	vga.setCursor(4,4);
-	vga.print("FPS: ");
-
-	// Avoid divide by 0 when nothing is drawn on screen
-	if (frametime > 0)
-	{
-		vga.println(1000.f/frametime);
-	}
-	else
-	{
-		vga.println("1000+");
-	}
-
-	timePrev = timeNow;
+	vga.println(1/timeDelta);
 
 	// Restore previously used text colors
 	vga.setTextColor(f, b);

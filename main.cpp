@@ -6,6 +6,7 @@
 #include <alloc.h>
 #include <ps2.h>
 #include <stats.h>
+#include <util.h>
 
 #if defined(CONFIG_DEBUG_VGA_PROJ)
 #include <textbuf.h>
@@ -40,9 +41,17 @@ void setup()
 #endif
 }
 
+static int64_t timePrev, timeNext;
+double timeDelta;
+
 void loop()
 {
-	vga.clear(32);
+	// Get time spent to render last frame
+	timePrev = timeNext;
+	timeNext = getTimeus();
+	timeDelta = (timeNext - timePrev)/1000000.f;
+
+	vga.clear(22);
 
 	// Get PS/2 keyboard state
     updateKeyboard();
@@ -50,17 +59,16 @@ void loop()
 	// Draw a Tempest-style wireframe cylinder
 	static double lastx1 = 0, lasty1 = 0;
 	static double lastx2 = 0, lasty2 = 0;
+	static double th = 1;
+	th += timeDelta/25.f;
+
 	for(int i = 0; i < 10; i++)
 	{
 		const double pi2 = 3.14159 * 2;
-		//double time = millis()/1000.f;
-		static double time = 1;
-		double s = sin(time+i*pi2/10);
-		double c = cos(time+i*pi2/10);
+		double s = sin(th+i*pi2/10);
+		double c = cos(th+i*pi2/10);
 		double x1,y1,x2,y2;
 
-		if (isKeyDown(Left_key))
-			time += .01f;
 		x1 = xres/2 + xres/16 * s;
 		y1 = yres/2 + yres/16 * c;
 		x2 = xres/2 + xres/3 * s;

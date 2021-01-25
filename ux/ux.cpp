@@ -10,4 +10,9 @@ long getPercentGradient(VGA6Bit &vga, double percent)
 	else return vga.RGB(0x00FF00 + (2.*(1.-percent)*0xFF));
 }
 
-
+void fillRectAlpha(VGA6Bit &vga, int x, int y, int w, int h, unsigned char color)
+{
+	for(int i = x; i < x + w; i++)
+		for(int j = y; j < y + h; j++)
+			vga.dotMix(i,j,color);
+}
