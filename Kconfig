@@ -1,0 +1,9 @@
+menu "VGA Project Specific Configs"
+
+config DEBUG_VGA_PROJ
+	bool "Enables debugging features for this project."
+
+config DEBUG_SHOW_FPS
+	bool "Enables debug FPS counter."
+
+endmenu
