@@ -52,6 +52,9 @@ void updateKeyboard()
 			}
 		}
 	}
+
+	if (isKeyDown(Ctrl_key) && isKeyDown(Alt_key) && isKeyDown(Del_key))
+		esp_restart();
 }
 
 #define IS_CURRENT_KEYCODE_BIT_SET(keycode) \
