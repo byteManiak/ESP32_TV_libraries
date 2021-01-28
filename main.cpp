@@ -46,10 +46,6 @@ void setup()
 	menu.setVGAController(&vga);
 }
 
-static int64_t timePrev, timeNext;
-
-bool toggle = true;
-
 void loop()
 {
 	// Get time spent to render last frame
