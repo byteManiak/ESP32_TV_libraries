@@ -21,7 +21,7 @@ int &yres = vga.yres;
 
 const int r[] = {13, 12}, g[] = {14, 27}, b[] = {33, 32};
 
-Menu menu;
+Menu *menu;
 
 void setup()
 {
@@ -43,7 +43,9 @@ void setup()
 	// Initialize the text view for debug builds
 	textview.setVGAController(&vga);
 #endif
-	menu.setVGAController(&vga);
+	menu = (Menu*)heap_caps_malloc(sizeof(Menu), MALLOC_CAP_SPIRAM);
+	new (menu) Menu();
+	menu->setVGAController(&vga);
 }
 
 void loop()
@@ -56,7 +58,7 @@ void loop()
 	// Get PS/2 keyboard state
     updateKeyboard();
 
-	menu.drawMenu();
+	menu->drawMenu();
 
 #if defined(CONFIG_DEBUG_VGA_PROJ)
 	// Show error messages from text view

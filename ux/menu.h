@@ -1,6 +1,7 @@
 #include <vector>
 #include <string.h>
 #include <VGA/VGA6Bit.h>
+#include <alloc.h>
 #include <util.h>
 
 class Submenu
@@ -46,21 +47,36 @@ public:
 
 	void drawMenu()
 	{
-		if (isKeyPressed(Up_key))
+		if (!usingSubmenu)
 		{
-			// Set the cursor on the next submenu
-			currentSubmenu = getPrevSubmenu(currentSubmenu);
-			radialMenuPos = getNextRadialPos(radialMenuPos);
-			// Trigger the radial menu to spin
-			destination += sliceSize;
+			if (isKeyPressed(Enter_key))
+				usingSubmenu = !usingSubmenu;
+
+			offsetDestination = 0;
+
+			if (isKeyPressed(Up_key))
+			{
+				// Set the cursor on the next submenu
+				currentSubmenu = getPrevSubmenu(currentSubmenu);
+				radialMenuPos = getNextRadialPos(radialMenuPos);
+				// Trigger the radial menu to spin
+				destination += sliceSize;
+			}
+			if (isKeyPressed(Down_key))
+			{
+				// Set the cursor on the next submenu
+				currentSubmenu = getNextSubmenu(currentSubmenu);
+				radialMenuPos = getPrevRadialPos(radialMenuPos);
+				// Trigger the radial menu to spin
+				destination -= sliceSize;
+			}
 		}
-		if (isKeyPressed(Down_key))
+		else
 		{
-			// Set the cursor on the next submenu
-			currentSubmenu = getNextSubmenu(currentSubmenu);
-			radialMenuPos = getPrevRadialPos(radialMenuPos);
-			// Trigger the radial menu to spin
-			destination -= sliceSize;
+			if (isKeyPressed(ESC_key))
+				usingSubmenu = !usingSubmenu;
+
+			offsetDestination = -vga->xres/4;
 		}
 
 		// Establish the current speed of the scroll
@@ -75,21 +91,38 @@ public:
 			else position += scrollSpeed;
 		}
 
+		// Establish the current speed of the scroll
+		double offsetDistance = abs(offsetPosition - offsetDestination);
+		if (offsetDistance > 0.001)
+		{
+			// Scale the scroll speed with the distance for a smooth animation
+			offsetScrollSpeed = offsetDistance * timeDelta * scrollFactor;
+			// Move radial menu towards the new destination
+			if (offsetPosition > offsetDestination)
+				offsetPosition -= offsetScrollSpeed;
+			else offsetPosition += offsetScrollSpeed;
+		}
+
 		// Draw the radial menu
 		for (uint8_t i = 0; i < 8; i++)
 		{
+			// Get the position of the current "needle"
+			uint8_t offsetPos = (i + radialMenuPos) % 8;
 			double s = sin(position + i * sliceSize);
 			double c = cos(position + i * sliceSize);
 			double x1, x2, y1, y2;
+			long color = 0x00FFAA;
 
-			x1 = vga->xres/16 * c;
+			// Change color of center "needle"
+			if (offsetPos == 0)
+				color = 0x00AAFF;
+
+			x1 = vga->xres/16 * c + offsetPosition;
 			y1 = vga->yres/2 + vga->yres/16 * s;
-			x2 = vga->xres/2.5f * c;
+			x2 = vga->xres/2.5f * c + offsetPosition;
 			y2 = vga->yres/2 + vga->yres/2.5f * s;
-			vga->line(x1, y1, x2, y2, vga->RGB(0x00FFAA));
+			vga->line(x1, y1, x2, y2, vga->RGB(color));
 
-			// Get the position of the current "needle"
-			uint8_t offsetPos = (i + radialMenuPos) % 8;
 			uint16_t printSubmenu;
 			// If on the bottom 3 "needles" visible on the screen
 			if (offsetPos <= 2)
@@ -112,7 +145,7 @@ public:
 
 private:
 	// Actual menus
-	std::vector<Submenu> submenus;
+	std::vector<Submenu, PSRAM_Allocator<Submenu>> submenus;
 	uint16_t currentSubmenu = 0;
 
 	// Helpers to draw the correct menu strings on screen
@@ -146,4 +179,8 @@ private:
 	const double scrollFactor = 3;
 	// size of a menu "slice"
 	const double sliceSize = pi2/8;
+	// used for moving the menu aside when inside a submenu
+	bool usingSubmenu = false;
+	double offsetPosition = 0, offsetDestination = 0;
+	double offsetScrollSpeed;
 };
