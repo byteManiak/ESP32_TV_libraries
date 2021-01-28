@@ -1,20 +1,17 @@
 #pragma once
 
-#include <vector>
 #include <VGA/VGA6Bit.h>
-#include <sdkconfig.h>
-#include <esp_attr.h>
 
 #define LIFETIME 4000
 #define NUMLINES 26
 static EXT_RAM_ATTR char lines[NUMLINES][64];
 static EXT_RAM_ATTR int lifetimes[NUMLINES];
 
-class TextBuf
+class TextView
 {
 public:
-	TextBuf() {}
-	~TextBuf() {}
+	TextView() {}
+	~TextView() {}
 
 	void setVGAController(VGA6Bit *vga)
 	{
@@ -22,7 +19,7 @@ public:
 		v = vga;
 	}
 
-	void add(const char *text)
+	void print(const char *text)
 	{
 		// Scroll text upwards
 		for(int i = 0; i < NUMLINES-1; i++)

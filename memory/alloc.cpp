@@ -1,6 +1,6 @@
 #include "alloc.h"
 
-void *heap_caps_malloc_perror(TextBuf *textbuf, size_t size, uint32_t caps)
+void *heap_caps_malloc_perror(TextView *textbuf, size_t size, uint32_t caps)
 {
 	void *t = heap_caps_malloc(size, caps);
 
@@ -10,7 +10,7 @@ void *heap_caps_malloc_perror(TextBuf *textbuf, size_t size, uint32_t caps)
 	{
 		char str[64];
 		snprintf(str, 64, "Failed to alloc %f bytes", size/1024.f);
-		textbuf->add(str);
+		textbuf->print(str);
 	}
 #endif
 

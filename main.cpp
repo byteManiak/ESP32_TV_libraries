@@ -7,10 +7,12 @@
 #include <ps2.h>
 #include <stats.h>
 #include <util.h>
+#include <ux.h>
+#include <menu.h>
 
 #if defined(CONFIG_DEBUG_VGA_PROJ)
-#include <textbuf.h>
-TextBuf textbuf;
+#include <textview.h>
+TextView textview;
 #endif
 
 VGA6Bit vga;
@@ -18,6 +20,8 @@ int &xres = vga.xres;
 int &yres = vga.yres;
 
 const int r[] = {13, 12}, g[] = {14, 27}, b[] = {33, 32};
+
+Menu menu;
 
 void setup()
 {
@@ -37,53 +41,30 @@ void setup()
 
 #if defined(CONFIG_DEBUG_VGA_PROJ)
 	// Initialize the text view for debug builds
-	textbuf.setVGAController(&vga);
+	textview.setVGAController(&vga);
 #endif
+	menu.setVGAController(&vga);
 }
 
 static int64_t timePrev, timeNext;
-double timeDelta;
+
+bool toggle = true;
 
 void loop()
 {
 	// Get time spent to render last frame
-	timePrev = timeNext;
-	timeNext = getTimeus();
-	timeDelta = (timeNext - timePrev)/1000000.f;
+	calculateTimeDelta();
 
 	vga.clear(22);
 
 	// Get PS/2 keyboard state
     updateKeyboard();
 
-	// Draw a Tempest-style wireframe cylinder
-	static double lastx1 = 0, lasty1 = 0;
-	static double lastx2 = 0, lasty2 = 0;
-	static double th = 1;
-	th += timeDelta/25.f;
-
-	for(int i = 0; i < 10; i++)
-	{
-		const double pi2 = 3.14159 * 2;
-		double s = sin(th+i*pi2/10);
-		double c = cos(th+i*pi2/10);
-		double x1,y1,x2,y2;
-
-		x1 = xres/2 + xres/16 * s;
-		y1 = yres/2 + yres/16 * c;
-		x2 = xres/2 + xres/3 * s;
-		y2 = yres/2 + yres/3 * c;
-		vga.line(x1,y1,x2,y2,vga.RGB(0x00FFAA));
-		vga.line(x1,y1,lastx1,lasty1,vga.RGB(0xFFFFFF));
-		vga.line(x2,y2,lastx2,lasty2,vga.RGB(0xFFFFFF));
-
-		lastx1 = x1; lasty1 = y1;
-		lastx2 = x2; lasty2 = y2;
-	}
+	menu.drawMenu();
 
 #if defined(CONFIG_DEBUG_VGA_PROJ)
 	// Show error messages from text view
-	textbuf.update();
+	textview.update();
 	// Display memory statistics
 	printMemStats(vga);
 #endif
