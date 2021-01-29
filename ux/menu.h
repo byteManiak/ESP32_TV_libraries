@@ -117,29 +117,32 @@ public:
 			if (offsetPos == 0)
 				color = 0x00AAFF;
 
-			x1 = vga->xres/16 * c + offsetPosition;
-			y1 = vga->yres/2 + vga->yres/16 * s;
-			x2 = vga->xres/2.5f * c + offsetPosition;
-			y2 = vga->yres/2 + vga->yres/2.5f * s;
-			vga->line(x1, y1, x2, y2, vga->RGB(color));
-
-			uint16_t printSubmenu;
-			// If on the bottom 3 "needles" visible on the screen
-			if (offsetPos <= 2)
+			if ((!usingSubmenu) || (usingSubmenu && offsetPos == 0))
 			{
-				printSubmenu = (currentSubmenu + offsetPos) % submenus.size();
-			}
-			else if (offsetPos >= 6)
-			{
-				int32_t printSubmenuTemp;
-				offsetPos = 8 - offsetPos;
-				printSubmenuTemp = currentSubmenu - offsetPos;
-				if (printSubmenuTemp < 0) printSubmenuTemp += submenus.size();
-				printSubmenu = printSubmenuTemp % submenus.size();
-			}
+				x1 = vga->xres/16 * c + offsetPosition;
+				y1 = vga->yres/2 + vga->yres/16 * s;
+				x2 = vga->xres/2.5f * c + offsetPosition;
+				y2 = vga->yres/2 + vga->yres/2.5f * s;
+				vga->line(x1, y1, x2, y2, vga->RGB(color));
 
-			vga->setCursor(x2-(x2-x1)/3, y2 - vga->font->charHeight/2);
-			vga->print(submenus[printSubmenu].title);
+				uint16_t printSubmenu;
+				// If on the bottom 3 "needles" visible on the screen
+				if (offsetPos <= 2)
+				{
+					printSubmenu = (currentSubmenu + offsetPos) % submenus.size();
+				}
+				else if (offsetPos >= 6)
+				{
+					int32_t printSubmenuTemp;
+					offsetPos = 8 - offsetPos;
+					printSubmenuTemp = currentSubmenu - offsetPos;
+					if (printSubmenuTemp < 0) printSubmenuTemp += submenus.size();
+					printSubmenu = printSubmenuTemp % submenus.size();
+				}
+
+				vga->setCursor(x2-(x2-x1)/3, y2 - vga->font->charHeight/2);
+				vga->print(submenus[printSubmenu].title);
+			}
 		}
 	}
 
