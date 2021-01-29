@@ -1,11 +1,13 @@
 #pragma once
 
+#include <vector>
 #include <esp_heap_caps.h>
 #include <textview.h>
 
 void *heap_caps_malloc_perror(TextView *textbuf, size_t size, uint32_t heap_caps);
 
-template <class T>
+#if defined(CONFIG_ESP32_SPIRAM_SUPPORT)
+template <typename T>
 struct PSRAM_Allocator
 {
 	typedef T value_type;
@@ -28,3 +30,12 @@ struct PSRAM_Allocator
 		heap_caps_free(p);
 	}
 };
+#endif
+
+template <typename T>
+#if defined(CONFIG_ESP32_SPIRAM_SUPPORT)
+using heap_caps_vector = std::vector<T, PSRAM_Allocator<T>>;
+#else
+using heap_caps_vector = std::vector<T, std::allocator<T>>;
+#endif
+

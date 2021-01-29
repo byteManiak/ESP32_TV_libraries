@@ -37,10 +37,12 @@ void printMemStats(VGA6Bit &vga)
 	vga.print("Free SRAM:   ");
 	printMemStat(vga, MALLOC_CAP_INTERNAL);
 
+#if defined(CONFIG_ESP32_SPIRAM_SUPPORT)
 	// Get external memory stat
 	vga.setTextColor(vga.RGB(0xFFFFFF));
 	vga.print("Free PSRAM:  ");
 	printMemStat(vga, MALLOC_CAP_SPIRAM);
+#endif
 
 	// Restore previously used text colors
 	vga.setTextColor(f, b);
