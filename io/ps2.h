@@ -89,6 +89,7 @@
 #define KpPlus_key 0x79
 #define Kp5_key 0x73
 
+void initKeyboard();
 void updateKeyboard();
 
 bool isKeyHeld(char keycode);

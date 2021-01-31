@@ -7,6 +7,7 @@
 void *heap_caps_malloc_perror(TextView *textbuf, size_t size, uint32_t heap_caps);
 
 #if defined(CONFIG_ESP32_SPIRAM_SUPPORT)
+#define MALLOC_CAP_PREFERRED MALLOC_CAP_SPIRAM
 template <typename T>
 struct PSRAM_Allocator
 {
@@ -30,6 +31,8 @@ struct PSRAM_Allocator
 		heap_caps_free(p);
 	}
 };
+#else
+#define MALLOC_CAP_PREFERRED MALLOC_CAP_DEFAULT
 #endif
 
 template <typename T>

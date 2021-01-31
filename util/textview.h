@@ -1,6 +1,8 @@
 #pragma once
 
+#include <string.h>
 #include <VGA/VGA6Bit.h>
+#include <util.h>
 
 #define LIFETIME 4000
 #define NUMLINES 26
@@ -29,7 +31,7 @@ public:
 		}
 
 		// Add the new string to print
-		lifetimes[NUMLINES-1] = millis();
+		lifetimes[NUMLINES-1] = getMillis();
 		strncpy(lines[NUMLINES-1], text, 64);
 	}
 
@@ -40,7 +42,7 @@ public:
 		// on screen for too long
 		for(int i = 0; i < NUMLINES; i++)
 		{
-			if (lifetimes[i] + LIFETIME > millis())
+			if (lifetimes[i] + LIFETIME > getMillis())
 			{
 				v->setCursor(4, i*8);
 				v->print(lines[i]);

@@ -1,4 +1,5 @@
 #include <ux.h>
+#include <string.h>
 
 long getPercentGradient(VGA6Bit &vga, double percent)
 {

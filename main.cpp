@@ -1,6 +1,6 @@
 #include <stdlib.h>
 #include <time.h>
-#include <Arduino.h>
+#include <esp_event.h>
 #include <ESP32Lib.h>
 #include <Ressources/CodePage437_8x8.h>
 #include <alloc.h>
@@ -23,12 +23,13 @@ const int r[] = {13, 12}, g[] = {14, 27}, b[] = {33, 32};
 
 Menu *menu;
 
-void setup()
+void loop();
+
+extern "C" void app_main()
 {
 	srand(time(NULL));
 
 	// Initialize VGA display
-
 	// Enable double buffering for non-tearing video
 	vga.setFrameBufferCount(2);
 	// Set display mode to 425x240
@@ -36,16 +37,15 @@ void setup()
 	// Use IBM BIOS font
 	vga.setFont(CodePage437_8x8);
 
-	// Initialize PS/2 keyboard communication
-	Serial2.begin(12000, SERIAL_8E1, 36, -1);
-
 #if defined(CONFIG_DEBUG_VGA_PROJ)
 	// Initialize the text view for debug builds
 	textview.setVGAController(&vga);
 #endif
-	menu = (Menu*)heap_caps_malloc(sizeof(Menu), MALLOC_CAP_SPIRAM);
+	menu = (Menu*)heap_caps_malloc(sizeof(Menu), MALLOC_CAP_PREFERRED);
 	new (menu) Menu();
 	menu->setVGAController(&vga);
+
+	for(;;) loop();
 }
 
 void loop()
@@ -74,4 +74,6 @@ void loop()
 
 	// Display backbuffer
 	vga.show();
+
+	vTaskDelay(10 / portTICK_PERIOD_MS);
 }

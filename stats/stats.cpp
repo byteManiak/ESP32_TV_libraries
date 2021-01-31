@@ -11,15 +11,19 @@ void printMemStat(VGA6Bit &vga, uint32_t heap_caps)
 	// Get a total memory approximate.
 	// Due to page tables, .bss section and others,
 	// the total size is not 100% accurate
-	int totalMem = heap_info.total_free_bytes + heap_info.total_allocated_bytes;
+	int freeMem = heap_info.total_free_bytes;
+	int totalMem = freeMem + heap_info.total_allocated_bytes;
+	int largestBlock = heap_info.largest_free_block;
 
 	// Get free memory in kb, with a gradient from
 	// green to red to show the "freeness" of the RAM
-	double percent = heap_info.total_free_bytes / (double)totalMem;
+	double percent = freeMem / (double)totalMem;
 	long color = getPercentGradient(vga, percent);
 	vga.setTextColor(color);
-	vga.print(heap_info.total_free_bytes/1024.f);
-	vga.print("k / ");
+	vga.print(freeMem/1024.f);
+	vga.print("k (");
+	vga.print(largestBlock/1024.f);
+	vga.print("k) / ");
 	vga.print(totalMem/1024.f);
 	vga.println("k");
 }

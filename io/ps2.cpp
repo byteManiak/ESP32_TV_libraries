@@ -1,4 +1,4 @@
-#include <Arduino.h>
+#include <driver/uart.h>
 #include "ps2.h"
 
 // Holds current state of all keys as 1-bit flags
@@ -8,19 +8,37 @@ static uint32_t ps2Keys_prev[4];
 
 static bool isKeyBeingReleased = false;
 
+void initKeyboard()
+{
+	uart_config_t keyboardConfig = {};
+	keyboardConfig.baud_rate = 12000;
+	keyboardConfig.data_bits = UART_DATA_8_BITS;
+	keyboardConfig.stop_bits = UART_STOP_BITS_1;
+	keyboardConfig.parity = UART_PARITY_EVEN;
+
+	uart_param_config(UART_NUM_2, &keyboardConfig);
+	uart_set_pin(UART_NUM_2, -1, 36, -1, -1);
+	uart_driver_install(UART_NUM_2, 256, 0, 0, NULL, 0);
+}
+
 void updateKeyboard()
 {
+
+	// Read from PS/2
+	uint8_t rxBuffer[256];
+	size_t rxLength = 0;
+	uart_get_buffered_data_len(UART_NUM_2, &rxLength);
+	uart_read_bytes(UART_NUM_2, rxBuffer, rxLength, 10 / portTICK_RATE_MS);
+
 	// Save old states to determine if a key was just pressed/released
 	ps2Keys_prev[0] = ps2Keys[0];
 	ps2Keys_prev[1] = ps2Keys[1];
 	ps2Keys_prev[2] = ps2Keys[2];
 	ps2Keys_prev[3] = ps2Keys[3];
 
-	// Read from PS/2
-	// TODO: Consider whether interrupt-based implementation is worth it
-	while (Serial2.available())
+	for (int i = 0; i < rxLength; i++)
 	{
-		char current = Serial2.read();
+		uint8_t current = rxBuffer[i];
 		switch (current)
 		{
 			// ignore 0xE0 and any other unrecognised codes as we do not use special/alt keys
