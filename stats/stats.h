@@ -1,12 +1,12 @@
 #pragma once
 
-#include <VGA/VGA6Bit.h>
+#include <ux.h>
 
 #if defined(CONFIG_DEBUG_VGA_PROJ)
-void printMemStat(VGA6Bit &vga, uint32_t heap_caps);
-void printMemStats(VGA6Bit &vga);
+void printMemStat(VGAExtended *vga, uint32_t heap_caps);
+void printMemStats(VGAExtended *vga);
 #endif
 
 #if defined(CONFIG_DEBUG_SHOW_FPS)
-void printFPS(VGA6Bit &vga);
+void printFPS(VGAExtended *vga);
 #endif

@@ -2,8 +2,14 @@
 
 #include <VGA/VGA6Bit.h>
 
-long getPercentGradient(VGA6Bit &vga, double percent);
 
-void fillRectAlpha(VGA6Bit& vga, int x, int y, int w, int h, unsigned char color);
+class VGAExtended : public VGA6Bit
+{
+public:
+    VGAExtended() : VGA6Bit() {}
 
-void printBox(VGA6Bit &vga, const char *text, int x, int y, long textColor = 0xFFFFFFFF, unsigned char boxColor = 63, unsigned char spacing = 2);
+    long getPercentGradient(double percent);
+    void fillRectAlpha(int x, int y, int w, int h, unsigned char color);
+    void printBox(const char *text, int x, int y, long textColor = 0xFFFFFFFF, unsigned char boxColor = 63, unsigned char spacing = 2);
+    void echoPassword(int numChars, int x, int y, long textColor = 0xFFFFFFFF);
+};
