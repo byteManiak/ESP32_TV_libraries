@@ -1,4 +1,6 @@
 #include <driver/uart.h>
+#include <util.h>
+#include <math.h>
 #include "ps2.h"
 
 // Holds current state of all keys as 1-bit flags
@@ -7,6 +9,83 @@ static uint32_t ps2Keys[4];
 static uint32_t ps2Keys_prev[4];
 
 static bool isKeyBeingReleased = false;
+static bool isShiftPressed = false;
+
+struct asciiMapping
+{
+	char scanCode, asciiCode, asciiCodeShift;
+};
+
+static asciiMapping asciiMappings[] = {
+	{Space_key, 32, 32},
+	{One_key, 49, 33},
+	{Two_key, 50, 64},
+	{Three_key, 51, 35},
+	{Four_key, 52, 36},
+	{Five_key, 53, 37},
+	{Six_key, 54, 94},
+	{Seven_key, 55, 38},
+	{Eight_key, 56, 42},
+	{Nine_key, 57, 40},
+	{Zero_key, 48, 41},
+	{Minus_key, 45, 95},
+	{Equal_key, 61, 43},
+	{A_key, 97, 65},
+	{B_key, 98, 66},
+	{C_key, 99, 67},
+	{D_key, 100, 68},
+	{E_key, 101, 69},
+	{F_key, 102, 70},
+	{G_key, 103, 71},
+	{H_key, 104, 72},
+	{I_key, 105, 73},
+	{J_key, 106, 74},
+	{K_key, 107, 75},
+	{L_key, 108, 76},
+	{M_key, 109, 77},
+	{N_key, 110, 78},
+	{O_key, 111, 79},
+	{P_key, 112, 80},
+	{Q_key, 113, 81},
+	{R_key, 114, 82},
+	{S_key, 115, 83},
+	{T_key, 116, 84},
+	{U_key, 117, 85},
+	{V_key, 118, 86},
+	{W_key, 119, 87},
+	{X_key, 120, 88},
+	{Y_key, 121, 89},
+	{Z_key, 122, 90},
+	{LBracket_key, 91, 123},
+	{RBracket_key, 93, 125},
+	{Backslash_key, 92, 124},
+	{Semicolon_key, 59, 58},
+	{Quote_key, 39, 34},
+	{Comma_key, 44, 60},
+	{Period_key, 46, 62},
+	{Slash_key, 47, 63},
+	{Tilda_key, 96, 126},
+	{KpMinus_key, 45, 45},
+	{KpPlus_key, 43, 43},
+	{KpMultiply_key, 42, 42},
+	{Kp0_key, 48, 48},
+	{Kp1_key, 49, 49},
+	{Kp2_key, 50, 50},
+	{Kp3_key, 51, 51},
+	{Kp4_key, 52, 52},
+	{Kp5_key, 53, 53},
+	{Kp6_key, 54, 54},
+	{Kp7_key, 55, 55},
+	{Kp8_key, 56, 56},
+	{Kp9_key, 57, 57},
+	{KpPeriod_key, 46, 46}
+};
+
+#define IS_CURRENT_KEYCODE_BIT_SET(keycode) \
+	(ps2Keys[keycode / 32] & (1 << (keycode % 32)))
+
+#define IS_PREV_KEYCODE_BIT_SET(keycode) \
+	(ps2Keys_prev[keycode / 32] & (1 << (keycode % 32)))
 
 void initKeyboard()
 {
@@ -23,7 +102,6 @@ void initKeyboard()
 
 void updateKeyboard()
 {
-
 	// Read from PS/2
 	uint8_t rxBuffer[256];
 	size_t rxLength = 0;
@@ -57,13 +135,13 @@ void updateKeyboard()
 			{
 				if (isKeyBeingReleased)
 				{
-					// Set flag corresponding to the key to false
+					// Clear flag corresponding to the key
 					ps2Keys[current / 32] &= ~(1 << (current % 32));
 					isKeyBeingReleased = false;
 				}
 				else
 				{
-					// Set flag corresponding to the key to true
+					// Set flag corresponding to the key
 					ps2Keys[current / 32] |= 1 << (current % 32);
 				}
 				continue;
@@ -71,39 +149,43 @@ void updateKeyboard()
 		}
 	}
 
+	if (IS_CURRENT_KEYCODE_BIT_SET(LShift_key) || IS_CURRENT_KEYCODE_BIT_SET(RShift_key))
+		isShiftPressed = true;
+	else isShiftPressed = false;
+
 	if (isKeyDown(Ctrl_key) && isKeyDown(Alt_key) && isKeyDown(Del_key))
 		esp_restart();
 }
 
-#define IS_CURRENT_KEYCODE_BIT_SET(keycode) \
-	(ps2Keys[keycode / 32] & (1 << (keycode % 32)))
-
-#define IS_PREV_KEYCODE_BIT_SET(keycode) \
-	(ps2Keys_prev[keycode / 32] & (1 << (keycode % 32)))
-
-// A key is held if both the current and previous states show the flag as true
 bool isKeyHeld(char keycode)
 {
 	return IS_CURRENT_KEYCODE_BIT_SET(keycode)
 		 & IS_PREV_KEYCODE_BIT_SET(keycode);
 }
 
-// A key is pressed if the current state's flag is true and the previous state's flag is false
 bool isKeyPressed(char keycode)
 {
 	return IS_CURRENT_KEYCODE_BIT_SET(keycode)
 		& ~IS_PREV_KEYCODE_BIT_SET(keycode);
 }
 
-// A key is released if the current state's flag is false and the previous state's flag is true
 bool isKeyReleased(char keycode)
 {
 	return ~IS_CURRENT_KEYCODE_BIT_SET(keycode)
 		  & IS_PREV_KEYCODE_BIT_SET(keycode);
 }
 
-// A key is down if it was just pressed or if it is still being held
 bool isKeyDown(char keycode)
 {
 	return isKeyPressed(keycode) || isKeyHeld(keycode);
+}
+
+char getLastAsciiKey()
+{
+	for(int i = 0; i < sizeof(asciiMappings)/sizeof(asciiMapping); i++)
+		if (isKeyPressed(asciiMappings[i].scanCode))
+		{
+			return isShiftPressed ? asciiMappings[i].asciiCodeShift : asciiMappings[i].asciiCode;
+		}
+	return 0;
 }

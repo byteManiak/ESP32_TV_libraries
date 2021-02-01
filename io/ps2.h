@@ -87,12 +87,58 @@
 #define KpMultiply_key 0x7C
 #define KpMinus_key 0x7B
 #define KpPlus_key 0x79
+#define Kp0_key 0x70
+#define Kp1_key 0x69
+#define Kp2_key 0x72
+#define Kp3_key 0x7A
+#define Kp4_key 0x6B
 #define Kp5_key 0x73
+#define Kp6_key 0x74
+#define Kp7_key 0x6C
+#define Kp8_key 0x75
+#define Kp9_key 0x7D
+#define KpPeriod_key 0x71
 
+/**
+ * @brief Initialize the keyboard-reading modules
+ */
 void initKeyboard();
+
+/**
+ * @brief Read bytes from keyboard and update state of pressed keys.
+ *        Must be called at the beginning/end of every frame.
+ */
 void updateKeyboard();
 
+/**
+ * @brief Check if key is still being pressed
+ *
+ * @param keycode Scan code to check
+ */
 bool isKeyHeld(char keycode);
+
+/**
+ * @brief Check if key was just pressed
+ *
+ * @param keycode Scan code to check
+ */
 bool isKeyPressed(char keycode);
+
+/**
+ * @brief Check if key was just released
+ *
+ * @param keycode Scan code to check
+ */
 bool isKeyReleased(char keycode);
+
+/**
+ * @brief Check if key is pressed, regardless of whether it just happened or not
+ *
+ * @param keycode Scan code to check
+ */
 bool isKeyDown(char keycode);
+
+/**
+ * @brief Gets the next ASCII character from the keyboard.
+ */
+char getLastAsciiKey();
