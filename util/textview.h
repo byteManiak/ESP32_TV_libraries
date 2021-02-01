@@ -27,12 +27,12 @@ public:
 		for(int i = 0; i < NUMLINES-1; i++)
 		{
 			lifetimes[i] = lifetimes[i+1];
-			strncpy(lines[i], lines[i+1], 64);
+			strlcpy(lines[i], lines[i+1], 64);
 		}
 
 		// Add the new string to print
 		lifetimes[NUMLINES-1] = getMillis();
-		strncpy(lines[NUMLINES-1], text, 64);
+		strlcpy(lines[NUMLINES-1], text, 64);
 	}
 
 	void update()

@@ -1,11 +1,9 @@
 #include <sys/time.h>
 #include <esp_timer.h>
 
-int64_t getTimeus()
+int64_t getMicros()
 {
-	struct timeval t;
-	gettimeofday(&t, NULL);
-	return (int64_t)t.tv_sec * 1000000L + (int64_t)t.tv_usec;
+	return esp_timer_get_time();
 }
 
 int64_t getMillis()
@@ -14,11 +12,21 @@ int64_t getMillis()
 	return timeSinceStartup/1000;
 }
 
+uint32_t getNextInt(uint32_t s, uint32_t max)
+{
+	return (s < max-1) ? s+1 : 0;
+}
+
+uint32_t getPrevInt(uint32_t s, uint32_t max)
+{
+	return (s > 0) ? s-1 : max-1;
+}
+
 double timeDelta;
 void calculateTimeDelta()
 {
-	static double timePrev = getTimeus(), timeNext = getTimeus();
+	static double timePrev = getMicros(), timeNext = getMicros();
 	timePrev = timeNext;
-	timeNext = getTimeus();
+	timeNext = getMicros();
 	timeDelta = (timeNext - timePrev)/1000000.f;
 }

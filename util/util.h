@@ -2,10 +2,12 @@
 
 #include <esp_log.h>
 
-const double pi2 = 3.14159 * 2;
+constexpr double pi2 = 3.14159 * 2;
 
-int64_t getTimeus();
+int64_t getMicros();
 int64_t getMillis();
+uint32_t getNextInt(uint32_t s, uint32_t max);
+uint32_t getPrevInt(uint32_t s, uint32_t max);
 
 extern double timeDelta;
 void calculateTimeDelta();
