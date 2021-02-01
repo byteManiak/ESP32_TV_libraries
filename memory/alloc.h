@@ -2,9 +2,29 @@
 
 #include <vector>
 #include <esp_heap_caps.h>
-#include <textview.h>
 
-void *heap_caps_malloc_perror(TextView *textbuf, size_t size, uint32_t heap_caps);
+template <class T, class... Args>
+T *heap_caps_malloc_construct(uint32_t caps, Args... args)
+{
+	T *obj = (T*)heap_caps_malloc(sizeof(T), caps);
+	if (obj)
+	{
+		new (obj) T(args...);
+	}
+	else
+	{
+		//LOG_PTR(obj, "heap_caps_malloc");
+	}
+
+	return obj;
+}
+
+template <typename T>
+T *heap_caps_malloc_cast(uint32_t caps, size_t n = 1)
+{
+	T *obj = (T*)heap_caps_malloc(sizeof(T) * n, caps);
+	return obj;
+}
 
 #if defined(CONFIG_ESP32_SPIRAM_SUPPORT)
 #define MALLOC_CAP_PREFERRED MALLOC_CAP_SPIRAM
