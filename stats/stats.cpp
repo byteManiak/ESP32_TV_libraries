@@ -1,5 +1,5 @@
 #include <stats.h>
-#include <ux.h>
+#include <vga.h>
 
 #if defined(CONFIG_DEBUG_VGA_PROJ)
 void printMemStat(VGAExtended *vga, uint32_t heap_caps)

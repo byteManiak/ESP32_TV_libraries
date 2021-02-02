@@ -3,7 +3,7 @@
 #include <alloc.h>
 #include <submenus/submenus.h>
 #include <util.h>
-#include <ux.h>
+#include <vga.h>
 
 class Menu
 {

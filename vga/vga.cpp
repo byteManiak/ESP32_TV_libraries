@@ -1,4 +1,4 @@
-#include <ux.h>
+#include <vga.h>
 #include <string.h>
 
 long VGAExtended::getPercentGradient(double percent)
@@ -18,7 +18,7 @@ void VGAExtended::fillRectAlpha(int x, int y, int w, int h, unsigned char color)
 			dotMix(i,j,color);
 }
 
-void VGAExtended::printBox(const char *text, int x, int y, long textColor, unsigned char boxColor, unsigned char spacing)
+void VGAExtended::printBox(const char *text, int x, int y, long textColor, unsigned char borderColor, signed char fillColor, unsigned char spacing)
 {
 	// Get original cursor and colors
 	long cx = this->cursorX, cy = this->cursorY;
@@ -28,7 +28,8 @@ void VGAExtended::printBox(const char *text, int x, int y, long textColor, unsig
 	unsigned int len = strnlen(text, 64);
 
 	// Display box and text
-	rect(x, y, len*8 + spacing*2, 8 + spacing*2, boxColor);
+	if (fillColor != -1) fillRect(x+1, y+1, len*8 + spacing*2 - 2, 6 + spacing*2, (unsigned char)fillColor);
+	rect(x, y, len*8 + spacing*2, 8 + spacing*2, borderColor);
 	setCursor(x+spacing, y+spacing);
 	setTextColor(RGB(0xFFFFFF));
 	print(text);
