@@ -12,6 +12,8 @@ uint32_t getPrevInt(uint32_t s, uint32_t max);
 extern double timeDelta;
 void calculateTimeDelta();
 
+void smoothLerp(double &from, double &to);
+
 #if defined(CONFIG_DEBUG_VGA_PROJ)
 #define LOG_FN(e, fn) { ESP_LOGI(TAG, "%s(%d): %s returned 0x%0x", __func__, __LINE__, fn, e); }
 #define LOG_PTR(ptr, fn) { ESP_LOGI(TAG, "%s(%d): %s returned %p", __func__, __LINE__, fn, ptr); }

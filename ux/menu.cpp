@@ -29,7 +29,7 @@ void Menu::drawMenu()
             currentSubmenu = getPrevInt(currentSubmenu, submenus.size());
             radialMenuPos = getNextInt(radialMenuPos, 8);
             // Trigger the radial menu to spin
-            destination += sliceSize;
+            destinationAngle += sliceSize;
         }
         if (isKeyPressed(Down_key))
         {
@@ -37,7 +37,7 @@ void Menu::drawMenu()
             currentSubmenu = getNextInt(currentSubmenu, submenus.size());
             radialMenuPos = getPrevInt(radialMenuPos, 8);
             // Trigger the radial menu to spin
-            destination -= sliceSize;
+            destinationAngle -= sliceSize;
         }
     }
     else
@@ -49,29 +49,11 @@ void Menu::drawMenu()
         offsetDestination = -vga->xres/4;
     }
 
-    // Establish the current speed of the scroll
-    double distance = abs(position - destination);
-    if (distance > 0.001)
-    {
-        // Scale the scroll speed with the distance for a smooth animation
-        scrollSpeed = distance * timeDelta * scrollFactor;
-        // Move radial menu towards the new destination
-        if (position > destination)
-            position -= scrollSpeed;
-        else position += scrollSpeed;
-    }
+    // Establish current angle of the menu
+    smoothLerp(currentAngle, destinationAngle);
 
-    // Establish the current speed of the scroll
-    double offsetDistance = abs(offsetPosition - offsetDestination);
-    if (offsetDistance > 0.001)
-    {
-        // Scale the scroll speed with the distance for a smooth animation
-        offsetScrollSpeed = offsetDistance * timeDelta * scrollFactor;
-        // Move radial menu towards the new destination
-        if (offsetPosition > offsetDestination)
-            offsetPosition -= offsetScrollSpeed;
-        else offsetPosition += offsetScrollSpeed;
-    }
+    // Establish offset currentAngle of the menu
+    smoothLerp(offsetPosition, offsetDestination);
 
     vga->setTextColor(vga->RGB(0xFFFFFF));
     // Draw the radial menu
@@ -79,8 +61,8 @@ void Menu::drawMenu()
     {
         // Get the position of the current "needle"
         uint8_t offsetPos = (i + radialMenuPos) % 8;
-        double s = sin(position + i * sliceSize);
-        double c = cos(position + i * sliceSize);
+        double s = sin(currentAngle + i * sliceSize);
+        double c = cos(currentAngle + i * sliceSize);
         double x1, x2, y1, y2;
         long color = 0x00FFAA;
 

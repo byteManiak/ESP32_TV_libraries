@@ -30,3 +30,15 @@ void calculateTimeDelta()
 	timeNext = getMicros();
 	timeDelta = (timeNext - timePrev)/1000000.f;
 }
+
+static constexpr double lerpFactor = 3;
+void smoothLerp(double &from, double &to)
+{
+	// Scale the scroll speed with the distance for a smooth animation
+	double distance = abs(from-to);
+	double scrollSpeed = distance * timeDelta * lerpFactor;
+
+	// Move radial menu towards the new destination
+	if (from > to) from -= scrollSpeed;
+	else from += scrollSpeed;
+}

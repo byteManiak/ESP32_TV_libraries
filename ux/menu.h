@@ -27,9 +27,8 @@ private:
 	// angle of the radial menu
 	double theta;
 	// used for smooth scrolling of the menu
-	double position = 0, destination = 0;
+	double currentAngle = 0, destinationAngle = 0;
 	double scrollSpeed;
-	const double scrollFactor = 3;
 	// size of a menu "slice"
 	static constexpr double sliceSize = pi2/8;
 	// used for moving the menu aside when inside a submenu
