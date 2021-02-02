@@ -65,20 +65,6 @@ static asciiMapping asciiMappings[] = {
 	{Period_key, 46, 62},
 	{Slash_key, 47, 63},
 	{Tilda_key, 96, 126},
-	{KpMinus_key, 45, 45},
-	{KpPlus_key, 43, 43},
-	{KpMultiply_key, 42, 42},
-	{Kp0_key, 48, 48},
-	{Kp1_key, 49, 49},
-	{Kp2_key, 50, 50},
-	{Kp3_key, 51, 51},
-	{Kp4_key, 52, 52},
-	{Kp5_key, 53, 53},
-	{Kp6_key, 54, 54},
-	{Kp7_key, 55, 55},
-	{Kp8_key, 56, 56},
-	{Kp9_key, 57, 57},
-	{KpPeriod_key, 46, 46}
 };
 
 #define IS_CURRENT_KEYCODE_BIT_SET(keycode) \
