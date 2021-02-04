@@ -62,10 +62,10 @@ public:
     {
         for(int i = 0; i < listElements.size(); i++)
         {
-            if (i == currentElement) vga->setTextColor(vga->RGB(0x00AAFF));
-            else vga->setTextColor(vga->RGB(0xFFFFFF));
+            if (i == currentElement) vga->setTextColor(vga->RGB(0x00AAFF), vga->backColor);
+            else vga->setTextColor(vga->RGB(0xFFFFFF), vga->backColor);
             vga->setCursor(baseX + offsetX, baseY + i * vga->font->charHeight);
-            vga->print(listElements[i]);
+            vga->drawText(listElements[i]);
         }
     }
 

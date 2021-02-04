@@ -32,7 +32,7 @@ extern "C" void app_main()
 
 	// Initialize VGA display
 	// Enable double buffering for non-tearing video
-	vga->setFrameBufferCount(2);
+	vga->setFrameBufferCount(1);
 	// Set display mode to 425x240
 	vga->init(vga->MODE640x480.custom(425,240), r, g, b, 22, 23);
 	// Use IBM BIOS font
@@ -42,6 +42,11 @@ extern "C" void app_main()
 	wifiMenu = heap_caps_malloc_construct<WifiMenu, VGAExtended*, const char*>(MALLOC_CAP_PREFERRED, vga, "Network");
 	wifiMenu->attachQueues(wifiQueueRx, wifiQueueTx);
 	menu->addSubMenu(wifiMenu);
+
+	// Establish the background color of the screen
+	vga->clear(22);
+	vga->backColor = 22;
+
 	for(;;) loop();
 }
 
@@ -52,8 +57,6 @@ void loop()
 
 	// Get PS/2 keyboard state
     updateKeyboard();
-
-	vga->clear(22);
 
 	menu->drawMenu();
 
@@ -67,8 +70,8 @@ void loop()
 	printFPS(vga);
 #endif
 
-	// Display backbuffer
-	vga->show();
+	// Display elements
+	vga->showDrawables();
 
 	vTaskDelay(10 / portTICK_PERIOD_MS);
 }

@@ -17,5 +17,5 @@ void Submenu::attachQueues(QueueHandle_t queueTx, QueueHandle_t queueRx)
 
 void Submenu::drawTitle()
 {
-    vga->print(this->title);
+    vga->drawText(this->title);
 }

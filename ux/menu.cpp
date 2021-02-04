@@ -55,7 +55,8 @@ void Menu::drawMenu()
     // Establish offset currentAngle of the menu
     smoothLerp(offsetPosition, offsetDestination);
 
-    vga->setTextColor(vga->RGB(0xFFFFFF));
+    vga->setTextColor(vga->RGB(0xFFFFFF), vga->backColor);
+
     // Draw the radial menu
     for (uint8_t i = 0; i < 8; i++)
     {
@@ -76,7 +77,7 @@ void Menu::drawMenu()
             y1 = vga->yres/2 + vga->yres/16 * s;
             x2 = vga->xres/2.5f * c + offsetPosition;
             y2 = vga->yres/2 + vga->yres/2.5f * s;
-            vga->line(x1, y1, x2, y2, vga->RGB(color));
+            vga->drawLine(x1, y1, x2, y2, vga->RGB(color));
 
             uint16_t printSubmenu;
             // If on the bottom 3 "needles" visible on the screen
