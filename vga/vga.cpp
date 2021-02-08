@@ -18,7 +18,7 @@ void VGAExtended::fillRectAlpha(int x, int y, int w, int h, unsigned char color)
 			dotMix(i,j,color);
 }
 
-void VGAExtended::printBox(const char *text, int x, int y, long textColor, unsigned char borderColor, signed char fillColor, unsigned char spacing)
+void VGAExtended::printBox(const char *text, int x, int y, unsigned char textColor, unsigned char borderColor, unsigned char fillColor, unsigned char spacing)
 {
 	// Get original cursor and colors
 	long cx = this->cursorX, cy = this->cursorY;
@@ -28,10 +28,10 @@ void VGAExtended::printBox(const char *text, int x, int y, long textColor, unsig
 	unsigned int len = strnlen(text, 64);
 
 	// Display box and text
-	if (fillColor != -1) drawRect(x+1, y+1, len*8 + spacing*2 - 2, 6 + spacing*2, (unsigned char)fillColor, true);
+	if (fillColor != 255) drawRect(x+1, y+1, len*8 + spacing*2 - 2, 6 + spacing*2, (unsigned char)fillColor, true);
 	drawRect(x, y, len*8 + spacing*2, 8 + spacing*2, borderColor);
 	setCursor(x+spacing, y+spacing);
-	setTextColor(RGB(0xFFFFFF), backColor);
+	setTextColor(textColor, backColor);
 	drawText(text);
 
 	// Restore original cursor and colors
@@ -97,7 +97,7 @@ void VGAExtended::showDrawables()
 		}
 
 		// If both objects are lines, check that they have the same coordinates and color
-		if (d->type == DRAWABLE_LINE)
+		if (d1->type == DRAWABLE_LINE)
 		{
 			DrawableLine *l1 = (DrawableLine*)d1;
 			DrawableLine *l2 = (DrawableLine*)d2;
@@ -110,7 +110,7 @@ void VGAExtended::showDrawables()
 			}
 		}
 		// If both objects are text, check that they have the same position, text, and color
-		else if (d->type == DRAWABLE_TEXT)
+		else if (d1->type == DRAWABLE_TEXT)
 		{
 			DrawableText *t1 = (DrawableText*)d1;
 			DrawableText *t2 = (DrawableText*)d2;
@@ -122,7 +122,7 @@ void VGAExtended::showDrawables()
 			}
 		}
 		// If both objects are rectangles, check that they have the same coordinates and color
-		else if (d->type == DRAWABLE_RECT)
+		else if (d1->type == DRAWABLE_RECT)
 		{
 			DrawableRect *r1 = (DrawableRect*)d1;
 			DrawableRect *r2 = (DrawableRect*)d2;

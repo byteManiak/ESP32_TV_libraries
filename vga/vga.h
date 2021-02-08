@@ -46,9 +46,8 @@ public:
 
     long getPercentGradient(double percent);
     void fillRectAlpha(int x, int y, int w, int h, unsigned char color);
-    void printBox(const char *text, int x, int y, long textColor = 0xFFFFFFFF, 
-                  unsigned char borderColor = 63, signed char fillColor = -1, unsigned char spacing = 2);
-    void echoPassword(int numChars, int x, int y, long textColor = 0xFFFFFFFF);
+    void printBox(const char *text, int x, int y, unsigned char textColor = 63,
+                  unsigned char borderColor = 63, unsigned char fillColor = 255, unsigned char spacing = 2);
 
     void drawLine(int x1, int x2, int y1, int y2, unsigned char color);
     void drawText(const char *text);
