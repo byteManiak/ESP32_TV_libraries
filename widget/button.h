@@ -14,9 +14,11 @@ public:
 
     int8_t update()
     {
+        if (isKeyPressed(Enter_key)) buttonPushed = true;
+        else if(isKeyReleased(Enter_key)) buttonPushed = false;
+
         if (isFocused)
         {
-            buttonPushed = isKeyPressed(Enter_key);
             return buttonPushed;
         }
         return 0;
@@ -29,9 +31,12 @@ public:
 
     void draw(int16_t offsetX)
     {
-        char fillColor = -1, textColor = vga->RGB(0xFFFFFF);
-        if (buttonPushed) { fillColor = vga->RGB(0xFFFFFF); textColor = vga->RGB(0); }
-        vga->printBox(text, baseX + offsetX, baseY, textColor, textColor, fillColor, 4);
+        if (isVisible)
+        {
+            unsigned char fillColor = 255, textColor = 63;
+            if (isFocused && buttonPushed) { fillColor = 63; textColor = 0; }
+            vga->printBox(text, baseX + offsetX, baseY, textColor, textColor, fillColor, 4);
+        }
     }
 private:
     bool buttonPushed = false;

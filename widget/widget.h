@@ -13,9 +13,11 @@ public:
     virtual void draw(int16_t offsetX);
 
 	void setFocused(bool focus) {isFocused = focus;}
+    void setVisible(bool visible) {isVisible = visible;}
 
 protected:
     bool isFocused = false;
+    bool isVisible = true;
 
     VGAExtended *vga;
     int16_t baseX, baseY;

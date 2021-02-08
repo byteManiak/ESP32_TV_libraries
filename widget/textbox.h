@@ -54,10 +54,10 @@ public:
 
 	void draw(int16_t offsetX)
 	{
-		if (isFocused)
+		if (isFocused && isVisible)
 		{
 			int len = strnlen(text, 65);
-			vga->printBox(text, vga->xres/2 - len/2.f * vga->font->charWidth - 4, vga->yres/2 - vga->font->charHeight/2 - 4);
+			vga->printBox(text, vga->xres/2 - len/2.f * vga->font->charWidth - 4, vga->yres/2 - vga->font->charHeight/2 - 4, 63, 63, 0);
 		}
 	}
 private:

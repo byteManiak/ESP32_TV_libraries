@@ -60,12 +60,15 @@ public:
 
     void draw(int16_t offsetX)
     {
-        for(int i = 0; i < listElements.size(); i++)
+        if (isVisible)
         {
-            if (i == currentElement) vga->setTextColor(vga->RGB(0x00AAFF), vga->backColor);
-            else vga->setTextColor(vga->RGB(0xFFFFFF), vga->backColor);
-            vga->setCursor(baseX + offsetX, baseY + i * vga->font->charHeight);
-            vga->drawText(listElements[i]);
+            for(int i = 0; i < listElements.size(); i++)
+            {
+                if (i == currentElement) vga->setTextColor(vga->RGB(0x00AAFF), vga->backColor);
+                else vga->setTextColor(vga->RGB(0xFFFFFF), vga->backColor);
+                vga->setCursor(baseX + offsetX, baseY + i * vga->font->charHeight);
+                vga->drawText(listElements[i]);
+            }
         }
     }
 
