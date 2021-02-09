@@ -11,23 +11,27 @@ class WifiMenu : public Submenu
 {
 public:
     WifiMenu(VGAExtended *vga, const char *title);
-    void drawSubmenu();
+    void updateSubmenu();
 
 private:
     List<const char*> *ssidList;
-    Button *beginScanButton;
+    Button *actionButton;
     Textbox *passwordTextbox;
+    Button *ipDetails, *gatewayDetails;
 
     enum wifiMenuState
     {
         WIFI_MENU_STATE_DEFAULT,
-        WIFI_MENU_STATE_SCAN_SSID,
-        WIFI_MENU_STATE_WAITING_SCAN,
+        WIFI_MENU_STATE_WAITING,
         WIFI_MENU_STATE_CHOOSE_SSID,
-        WIFI_MENU_STATE_QUERY_PASSWORD
+        WIFI_MENU_STATE_QUERY_PASSWORD,
+        WIFI_MENU_STATE_CONNECTED,
+        WIFI_MENU_STATE_DISCONNECTED
     };
 
     wifiMenuState state = WIFI_MENU_STATE_DEFAULT;
+
+    void receiveQueueData();
 
     // List of SSIDs to choose from after scan event
 	int selectedSsid = 0;
@@ -37,4 +41,7 @@ private:
     // Password to send to wifi task
 	char password[65];
 	int passwordLength = 0;
+
+    // IP and gateway addresses
+    char ipAddress[16], gatewayAddress[16];
 };
