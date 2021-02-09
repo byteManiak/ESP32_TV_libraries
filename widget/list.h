@@ -62,12 +62,19 @@ public:
     {
         if (isVisible)
         {
+            double to = baseX + offsetX;
+            smoothLerp(currentX, to);
             for(int i = 0; i < listElements.size(); i++)
             {
                 if (i == currentElement) vga->setTextColor(vga->RGB(0x00AAFF), vga->backColor);
                 else vga->setTextColor(vga->RGB(0xFFFFFF), vga->backColor);
-                vga->setCursor(baseX + offsetX, baseY + i * vga->font->charHeight);
+
+                int xcoord = currentX - vga->font->charWidth * strlen(listElements[i]) / 2.f;
+                vga->setCursor(xcoord, baseY + i * (vga->font->charHeight+1));
                 vga->drawText(listElements[i]);
+
+                int ylinecoord = baseY + (i+1) * (vga->font->charHeight+1) - 1;
+                vga->drawLine(xcoord, ylinecoord, xcoord+vga->xres, ylinecoord, vga->RGB(0x00FFAA));
             }
         }
     }

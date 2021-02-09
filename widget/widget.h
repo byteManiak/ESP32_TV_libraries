@@ -8,7 +8,7 @@ class Widget
 {
 public:
     Widget(VGAExtended *vga, int16_t x, int16_t y)
-        : vga{vga}, baseX{x}, baseY{y} {}
+        : vga{vga}, baseX{x}, baseY{y} {currentX = baseX; currentY = baseY;}
     virtual int8_t update() = 0;
     virtual void draw(int16_t offsetX);
 
@@ -21,4 +21,5 @@ protected:
 
     VGAExtended *vga;
     int16_t baseX, baseY;
+    double currentX, currentY;
 };

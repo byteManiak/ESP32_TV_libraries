@@ -34,6 +34,13 @@ public:
 			return 1;
 		}
 
+		if (isKeyPressed(ESC_key))
+		{
+			text[0] = '\0';
+			textCursorPos = 0;
+			return 2;
+		}
+
 		return 0;
 	}
 

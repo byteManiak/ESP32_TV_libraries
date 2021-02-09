@@ -3,6 +3,7 @@
 #include <string.h>
 
 #include <ps2.h>
+#include <util.h>
 
 #include <widget.h>
 
@@ -29,16 +30,26 @@ public:
         strlcpy(this->text, text, 32);
     }
 
+    void setFillColor(unsigned char color)
+    {
+        fillColor = color;
+    }
+
     void draw(int16_t offsetX)
     {
         if (isVisible)
         {
-            unsigned char fillColor = 255, textColor = 63;
-            if (isFocused && buttonPushed) { fillColor = 63; textColor = 0; }
-            vga->printBox(text, baseX + offsetX, baseY, textColor, textColor, fillColor, 4);
+            double to = baseX + offsetX - strlen(text)/2.f*vga->font->charWidth;
+            smoothLerp(currentX, to);
+            // Swap colors of text and background if button is pressed
+            if (isFocused && buttonPushed)
+                vga->printBox(text, currentX, baseY, fillColor, fillColor, textColor, 4);
+            else
+                vga->printBox(text, currentX, baseY, textColor, textColor, fillColor, 4);
         }
     }
 private:
+    unsigned char fillColor = 255, textColor = 63;
     bool buttonPushed = false;
     char text[32];
 };
