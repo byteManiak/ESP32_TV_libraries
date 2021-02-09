@@ -9,7 +9,9 @@
 #include <util.h>
 #include <vga.h>
 #include <menu.h>
-#include <wifi.h>
+#include <sound.h>
+#include <wifi/common.h>
+#include <wifi/server.h>
 
 VGAExtended *vga;
 
@@ -39,19 +41,22 @@ extern "C" void app_main()
 	vga->setFont(CodePage437_8x8);
 
 	menu = heap_caps_malloc_construct<Menu, VGAExtended*>(MALLOC_CAP_PREFERRED, vga);
-	wifiMenu = heap_caps_malloc_construct<WifiMenu, VGAExtended*, const char*>(MALLOC_CAP_PREFERRED, vga, "Network");
-	wifiMenu->attachQueues(wifiQueueRx, wifiQueueTx);
+
+	wifiMenu = heap_caps_malloc_construct<WifiMenu, VGAExtended*, const char*>(MALLOC_CAP_PREFERRED, vga, "Wi-Fi");
 	menu->addSubMenu(wifiMenu);
 
 	// Establish the background color of the screen
-	vga->clear(22);
-	vga->backColor = 22;
+	vga->clear(21);
+	vga->backColor = 21;
+
+	initSound();
 
 	for(;;) loop();
 }
 
 void loop()
 {
+	if (isKeyPressed(ScrLock_key)) enableSound = !enableSound;
 	// Get time spent to render last frame
 	calculateTimeDelta();
 
@@ -73,5 +78,6 @@ void loop()
 	// Display elements
 	vga->showDrawables();
 
-	vTaskDelay(10 / portTICK_PERIOD_MS);
+	// Limit framerate to 50fps as there is no point going above that
+	vTaskDelay(20 / portTICK_PERIOD_MS);
 }

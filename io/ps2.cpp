@@ -1,4 +1,5 @@
 #include <driver/uart.h>
+#include <sound.h>
 #include <util.h>
 #include <math.h>
 #include "ps2.h"
@@ -140,7 +141,11 @@ void updateKeyboard()
 	else isShiftPressed = false;
 
 	if (isKeyDown(Ctrl_key) && isKeyDown(Alt_key) && isKeyDown(Del_key))
+	{
+		setNote(0,0,0);
+		setNote(1,0,0);
 		esp_restart();
+	}
 }
 
 bool isKeyHeld(char keycode)
