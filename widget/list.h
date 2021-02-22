@@ -30,7 +30,11 @@ public:
     {
         size_t listSize = listElements.size();
         for(int i = 0; i < listSize; i++)
-            listElements.pop_back();
+        {
+            T currentElem = listElements[i];
+            heap_caps_free(currentElem);
+        }
+        listElements.clear();
     }
 
     T &getElement()
