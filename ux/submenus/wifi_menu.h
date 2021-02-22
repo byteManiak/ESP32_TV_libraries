@@ -14,7 +14,7 @@ public:
     void updateSubmenu();
 
 private:
-    List<const char*> *ssidList;
+    List<char*> *ssidList;
     Button *actionButton;
     Textbox *passwordTextbox;
     Button *ipDetails, *gatewayDetails;
@@ -27,6 +27,15 @@ private:
         WIFI_MENU_STATE_QUERY_PASSWORD,
         WIFI_MENU_STATE_CONNECTED,
         WIFI_MENU_STATE_DISCONNECTED
+    };
+
+    enum widgetPosition
+    {
+        ACTION_BUTTON,
+        SSID_LIST,
+        IP_DETAILS,
+        GATEWAY_DETAILS,
+        PASSWORD_TEXTBOX
     };
 
     wifiMenuState state = WIFI_MENU_STATE_DEFAULT;

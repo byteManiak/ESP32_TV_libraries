@@ -15,8 +15,8 @@ WifiMenu::WifiMenu(VGAExtended *vga, const char *title) : Submenu(vga, title)
     new (actionButton) Button(vga, "Begin WiFi scan", vga->xres/2 + vga->xres/16, vga->yres/6);
     widgets.push_back(actionButton);
 
-    ssidList = heap_caps_malloc_cast<List<const char*>>(MALLOC_CAP_PREFERRED);
-    new (ssidList) List<const char*>(vga, vga->xres/2 + vga->xres/16, vga->yres/4, 8);
+    ssidList = heap_caps_malloc_cast<List<char*>>(MALLOC_CAP_PREFERRED);
+    new (ssidList) List<char*>(vga, vga->xres/2 + vga->xres/16, vga->yres/4, 8);
     widgets.push_back(ssidList);
 
     ipDetails = heap_caps_malloc_cast<Button>(MALLOC_CAP_PREFERRED);
@@ -29,7 +29,7 @@ WifiMenu::WifiMenu(VGAExtended *vga, const char *title) : Submenu(vga, title)
     gatewayDetails->setVisible(false);
     widgets.push_back(gatewayDetails);
 
-    setFocusedWidget(0);
+    setFocusedWidget(ACTION_BUTTON);
 }
 
 void WifiMenu::receiveQueueData()
@@ -58,12 +58,19 @@ void WifiMenu::receiveQueueData()
                 {
                     ipDetails->setVisible(true);
                     gatewayDetails->setVisible(true);
+
+                    actionButton->setText("Connected!");
+                    actionButton->setFillColor(8);
+
                     state = WIFI_MENU_STATE_CONNECTED;
                     break;
                 }
 
                 case WIFI_QUEUE_RX_DISCONNECTED:
                 {
+                    actionButton->setText("Connection lost. Rescan?");
+                    actionButton->setFillColor(22);
+
                     state = WIFI_MENU_STATE_DISCONNECTED;
                     break;
                 }
@@ -120,8 +127,9 @@ void WifiMenu::updateSubmenu()
                     ESP_LOGI("menu", "Sent scan event to queue %p", queueTx);
                     // No longer need to scan an SSID
                     state = WIFI_MENU_STATE_WAITING;
+                    actionButton->setFillColor(56);
                     actionButton->setText("Scanning WiFi...");
-                    setFocusedWidget(1);
+                    setFocusedWidget(SSID_LIST);
                 }
             }
             break;
@@ -129,6 +137,7 @@ void WifiMenu::updateSubmenu()
 
         case WIFI_MENU_STATE_CHOOSE_SSID:
         {
+            actionButton->setFillColor(50);
             actionButton->setText("Scan results:");
             // Logic for choosing a SSID for which to enter a password and then connect to
             if (!ssidList->isEmpty())
@@ -145,7 +154,7 @@ void WifiMenu::updateSubmenu()
                         new (passwordTextbox) Textbox(vga, true);
                         widgets.push_back(passwordTextbox);
 
-                        setFocusedWidget(4);
+                        setFocusedWidget(PASSWORD_TEXTBOX);
                     }
                 }
             }
@@ -163,7 +172,7 @@ void WifiMenu::updateSubmenu()
                     ssidList->clear();
 
                     state = WIFI_MENU_STATE_WAITING;
-                    setFocusedWidget(0);
+                    setFocusedWidget(ACTION_BUTTON);
 
                     widgets.pop_back();
                     heap_caps_free(passwordTextbox);
@@ -172,7 +181,7 @@ void WifiMenu::updateSubmenu()
             else if (focusedWidgetResult == 2)
             {
                 state = WIFI_MENU_STATE_CHOOSE_SSID;
-                setFocusedWidget(1);
+                setFocusedWidget(SSID_LIST);
 
                 widgets.pop_back();
                 heap_caps_free(passwordTextbox);
@@ -185,15 +194,11 @@ void WifiMenu::updateSubmenu()
 
         case WIFI_MENU_STATE_CONNECTED:
         {
-            actionButton->setText("Connected!");
-            actionButton->setFillColor(8);
             break;
         }
 
         case WIFI_MENU_STATE_DISCONNECTED:
         {
-            actionButton->setText("Connect failed. Rescan?");
-            actionButton->setFillColor(22);
             if (focusedWidgetResult == 1)
             {
                 BaseType_t e = sendWifiQueueData(queueTx, WIFI_QUEUE_TX_USER_BEGIN_SCAN, NULL);
@@ -204,7 +209,7 @@ void WifiMenu::updateSubmenu()
                     // No longer need to scan an SSID
                     state = WIFI_MENU_STATE_WAITING;
                     actionButton->setText("Scanning WiFi...");
-                    setFocusedWidget(1);
+                    setFocusedWidget(SSID_LIST);
                 }
             }
 

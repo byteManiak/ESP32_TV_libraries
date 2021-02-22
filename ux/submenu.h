@@ -28,8 +28,11 @@ public:
 	void setActiveSubmenu(bool isActive)
 	{
 		this->isActive = isActive;
-		if (isActive) setFocusedWidget(focusedWidgetIndex);
-		else setFocusedWidget(-1);
+		if (widgets.size() > 0)
+		{
+			if (isActive) setFocusedWidget(focusedWidgetIndex);
+			else setFocusedWidget(-1);
+		}
 	}
 
 	bool isActiveMenu = false;
@@ -40,15 +43,18 @@ protected:
 		// Unfocus the current widget
 		if (focusedWidget) focusedWidget->setFocused(false);
 
-		if (widgetNum < 0) {focusedWidget = nullptr; return;}
+		if (widgetNum < 0) {focusedWidget = NULL; return;}
 
 		// Focus the new widget
 		focusedWidget = widgets[widgetNum];
 		focusedWidgetIndex = widgetNum;
 		focusedWidget->setFocused(true);
 	}
+
+	virtual void receiveQueueData() = 0;
+
 	uint8_t focusedWidgetIndex = 0;
-	Widget *focusedWidget = nullptr;
+	Widget *focusedWidget = NULL;
 	heap_caps_vector<Widget*> widgets;
 
 	VGAExtended *vga;
@@ -57,5 +63,5 @@ protected:
 
 	char title[64];
 
-	QueueHandle_t queueRx = nullptr, queueTx = nullptr;
+	QueueHandle_t queueRx = NULL, queueTx = NULL;
 };
