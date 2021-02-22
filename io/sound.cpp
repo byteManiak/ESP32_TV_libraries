@@ -1,145 +1,134 @@
 #include <sound.h>
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
-#include <driver/ledc.h>
-#include <esp_timer.h>
-#include <esp_log.h>
+#include <driver/i2s.h>
+#include <board.h>
+#include <audio_hal.h>
+#include <audio_element.h>
+#include <audio_pipeline.h>
+#include <http_stream.h>
+#include <mp3_decoder.h>
+#include <i2s_stream.h>
+
+#include <alloc.h>
 #include <util.h>
 
-#define SOUND_TICK_PERIOD_US 83000
-#define SOUND_TICKS_PER_NOTE 5
+static const char *TAG = "sound";
 
-static esp_timer_handle_t soundTimer;
+QueueHandle_t audioQueue;
 
-static uint32_t notes[2][192] = {
-	{131, 147, 155, 196, 131, 147, 155, 196, 131, 147, 155, 196, 131, 147, 155, 196, 
-	 131, 147, 155, 196, 131, 147, 155, 196, 131, 147, 155, 196, 131, 147, 155, 196, 
-	 131, 147, 155, 196, 131, 147, 155, 196, 131, 147, 155, 196, 131, 147, 155, 196, 
-	 131, 147, 155, 196, 131, 147, 155, 196, 131, 147, 155, 196, 131, 147, 155, 196, 
-	 116, 131, 147, 175, 116, 131, 147, 175, 116, 131, 147, 175, 116, 131, 147, 175, 
-	 116, 131, 147, 175, 116, 131, 147, 175, 116, 131, 147, 175, 116, 131, 147, 175, 
-	 116, 131, 147, 175, 116, 131, 147, 175, 116, 131, 147, 175, 116, 131, 147, 175, 
-	 116, 131, 147, 175, 116, 131, 147, 175, 116, 131, 147, 175, 116, 131, 147, 175, 
-	 104, 116, 131, 155, 104, 116, 131, 155, 104, 116, 131, 155, 104, 116, 131, 155, 
-	 104, 116, 131, 155, 104, 116, 131, 155, 104, 116, 131, 155, 104, 116, 131, 155, 
-	 104, 116, 131, 155, 104, 116, 131, 155, 104, 116, 131, 155, 104, 116, 131, 155, 
-	 104, 116, 131, 155, 104, 116, 131, 155, 104, 116, 131, 155, 104, 116, 131, 155},
+static audio_board_handle_t boardHandle;
+static audio_pipeline_handle_t pipeline;
+static audio_element_handle_t httpStream, mp3Decoder, i2sDac;
 
-	{131, 0,   0,   0,   131, 0,   0,   0,   131, 0,   0,   0,   131, 0,   131, 0,   
-	 0,   0,   131, 0,   0,   0,   131, 0,   131, 0,   0,   0,   0,   0,   0,   0,
-	 131, 0,   0,   0,   131, 0,   0,   0,   131, 0,   0,   0,   131, 0,   131, 0,   
-	 0,   0,   131, 0,   0,   0,   131, 0,   131, 0,   0,   0,   0,   0,   0,   0,
-	 131, 0,   0,   0,   131, 0,   0,   0,   131, 0,   0,   0,   131, 0,   131, 0,   
-	 0,   0,   131, 0,   0,   0,   131, 0,   131, 0,   0,   0,   0,   0,   0,   0,
-	 131, 0,   0,   0,   131, 0,   0,   0,   131, 0,   0,   0,   131, 0,   131, 0,   
-	 0,   0,   131, 0,   0,   0,   131, 0,   131, 0,   0,   0,   0,   0,   0,   0,
-	 131, 0,   0,   0,   131, 0,   0,   0,   131, 0,   0,   0,   131, 0,   131, 0,   
-	 0,   0,   131, 0,   0,   0,   131, 0,   131, 0,   0,   0,   0,   0,   0,   0,
-	 131, 0,   0,   0,   131, 0,   0,   0,   131, 0,   0,   0,   131, 0,   131, 0,   
-	 0,   0,   131, 0,   0,   0,   131, 0,   131, 0,   0,   0,   0,   0,   0,   0}
-};
-
-static uint8_t currentNoteTick = 0;
-static uint32_t i = 0;
-static uint16_t duty = 0;
-
-bool enableSound = true;
-
-#define len(a) sizeof(a)/sizeof(a[0])
-static void soundLoop(void *arg)
+static int playlistHandler(http_stream_event_msg_t *message)
 {
-	currentNoteTick = getNextInt(currentNoteTick, SOUND_TICKS_PER_NOTE);
-	if (currentNoteTick == 0)
+	switch(message->event_id)
 	{
-		setNote(0, duty%4096, notes[0][i%192]*2);
-		setNote(1, 3072, notes[1][i%192]/2);
-		i++;
+		case HTTP_STREAM_FINISH_TRACK: return http_stream_next_track(message->el);
+		case HTTP_STREAM_FINISH_PLAYLIST: return http_stream_fetch_again(message->el);
+		default: return ESP_OK;
 	}
-	duty++;
+}
+
+void audioDispatchTask(void *arg)
+{
+	esp_err_t error;
+
+	char *streamURL = (char*)arg;
+	const char *pipelineStages[] = {"get", "cvt", "out"};
+
+	http_stream_cfg_t httpStreamConfig = {};
+	mp3_decoder_cfg_t mp3DecoderConfig = {};
+	i2s_stream_cfg_t i2sDacConfig = {};
+
+	audio_pipeline_cfg_t pipelineCfg = { DEFAULT_PIPELINE_RINGBUF_SIZE };
+	pipeline = audio_pipeline_init(&pipelineCfg);
+
+	httpStreamConfig.type = AUDIO_STREAM_READER;
+	httpStreamConfig.task_core = 1;
+	httpStreamConfig.task_prio = HTTP_TASK_PRIORITY;
+	httpStreamConfig.task_stack = 5120;
+	httpStreamConfig.out_rb_size = 8192;
+	httpStreamConfig.stack_in_ext = true;
+	httpStreamConfig.enable_playlist_parser = true;
+	httpStreamConfig.event_handle = playlistHandler;
+	httpStream = http_stream_init(&httpStreamConfig);
+	LOG_FN_GOTO_IF_NULL(httpStream, "http_stream_init", httpStreamFail);
+
+	mp3DecoderConfig.task_core = 1;
+	mp3DecoderConfig.task_prio = MP3_TASK_PRIORITY;
+	mp3DecoderConfig.stack_in_ext = true;
+	mp3DecoderConfig.task_stack = 3072;
+	mp3DecoderConfig.out_rb_size = 4096;
+	mp3Decoder = mp3_decoder_init(&mp3DecoderConfig);
+	LOG_FN_GOTO_IF_NULL(mp3Decoder, "mp3_decoder_init", mp3DecoderFail);
+
+	i2sDacConfig.type = AUDIO_STREAM_WRITER;
+	i2sDacConfig.i2s_port = I2S_NUM_0;
+	i2sDacConfig.out_rb_size = 4096;
+	i2sDacConfig.stack_in_ext = true;
+	i2sDacConfig.task_core = 1;
+	i2sDacConfig.task_prio = I2S_TASK_PRIORITY;
+	i2sDacConfig.task_stack = 3072;
+	i2sDacConfig.i2s_config.bits_per_sample = I2S_BITS_PER_SAMPLE_16BIT;
+	i2sDacConfig.i2s_config.sample_rate = 44100;
+	i2sDacConfig.i2s_config.mode = (i2s_mode_t)(I2S_MODE_DAC_BUILT_IN | I2S_MODE_MASTER | I2S_MODE_TX);
+	i2sDacConfig.i2s_config.communication_format = I2S_COMM_FORMAT_STAND_I2S;
+	i2sDacConfig.i2s_config.channel_format = I2S_CHANNEL_FMT_RIGHT_LEFT;
+	i2sDacConfig.i2s_config.dma_buf_count = 2;
+	i2sDacConfig.i2s_config.dma_buf_len = 1024;
+	i2sDacConfig.i2s_config.intr_alloc_flags = ESP_INTR_FLAG_LEVEL1;
+	i2sDacConfig.i2s_config.tx_desc_auto_clear = true;
+	i2sDac = i2s_stream_init(&i2sDacConfig);
+	LOG_FN_GOTO_IF_NULL(i2sDac, "is2_stream_init", i2sDacFail);
+
+	error = audio_pipeline_register(pipeline, httpStream, "get");
+	LOG_FN_GOTO_IF_ERR(error, "audio_pipeline_register:1", registerHttpFail);
+	error = audio_pipeline_register(pipeline, mp3Decoder, "cvt");
+	LOG_FN_GOTO_IF_ERR(error, "audio_pipeline_register:2", registerMp3Fail);
+	error = audio_pipeline_register(pipeline, i2sDac, "out");
+	LOG_FN_GOTO_IF_ERR(error, "audio_pipeline_register:3", registerI2sFail);
+
+	error = audio_pipeline_link(pipeline, pipelineStages, 3);
+	LOG_FN_GOTO_IF_ERR(error, "audio_pipeline_link", pipelineLinkFail);
+
+	audio_element_set_uri(httpStream, streamURL);
+	heap_caps_free(streamURL);
+
+	error = audio_pipeline_run(pipeline);
+	LOG_FN_GOTO_IF_ERR(error, "audio_pipeline_run", pipelineRunFail);
+
+success:
+	goto exit;
+
+pipelineRunFail:
+pipelineLinkFail:
+	audio_pipeline_unregister(pipeline, i2sDac);
+registerI2sFail:
+	audio_pipeline_unregister(pipeline, mp3Decoder);
+registerMp3Fail:
+	audio_pipeline_unregister(pipeline, httpStream);
+registerHttpFail:
+	audio_element_deinit(i2sDac);
+i2sDacFail:
+	audio_element_deinit(mp3Decoder);
+mp3DecoderFail:
+	audio_element_deinit(httpStream);
+httpStreamFail:
+	audio_pipeline_deinit(pipeline);
+
+exit:
+	vTaskDelete(NULL);
 }
 
 void initSound()
 {
-	ledc_timer_config_t timer1Config = {};
-	timer1Config.speed_mode = LEDC_HIGH_SPEED_MODE;
-	timer1Config.duty_resolution = LEDC_TIMER_12_BIT;
-	timer1Config.freq_hz = 5000;
-	timer1Config.timer_num = LEDC_TIMER_0;
-	timer1Config.clk_cfg = LEDC_USE_APB_CLK;
-
-	ledc_timer_config_t timer2Config = {};
-	timer2Config.speed_mode = LEDC_HIGH_SPEED_MODE;
-	timer2Config.duty_resolution = LEDC_TIMER_12_BIT;
-	timer2Config.freq_hz = 5000;
-	timer2Config.timer_num = LEDC_TIMER_1;
-	timer2Config.clk_cfg = LEDC_USE_APB_CLK;
-
-	ledc_timer_config(&timer1Config);
-	ledc_timer_config(&timer2Config);
-
-	ledc_channel_config_t sound1Config = {};
-	sound1Config.gpio_num = 18;
-	sound1Config.channel = LEDC_CHANNEL_0;
-	sound1Config.speed_mode = LEDC_HIGH_SPEED_MODE;
-	sound1Config.timer_sel = LEDC_TIMER_0;
-	sound1Config.duty = 0;
-
-	ledc_channel_config_t sound2Config = {};
-	sound2Config.gpio_num = 19;
-	sound2Config.channel = LEDC_CHANNEL_1;
-	sound2Config.speed_mode = LEDC_HIGH_SPEED_MODE;
-	sound2Config.timer_sel = LEDC_TIMER_1;
-	sound2Config.duty = 0;
-
-	ledc_fade_func_uninstall();
-
-	ledc_channel_config(&sound1Config);
-	ledc_channel_config(&sound2Config);
-
-	ledc_set_duty(LEDC_HIGH_SPEED_MODE, LEDC_CHANNEL_0, 0);
-	ledc_set_freq(LEDC_HIGH_SPEED_MODE, LEDC_TIMER_0, 110);
-
-	esp_timer_create_args_t isrTimerConfig;
-	isrTimerConfig.callback = soundLoop;
-	isrTimerConfig.name = "Sound";
-	esp_timer_create(&isrTimerConfig, &soundTimer);
-	esp_timer_start_periodic(soundTimer, SOUND_TICK_PERIOD_US / SOUND_TICKS_PER_NOTE);
-}
-
-//#define QUIET
-
-static uint32_t prevDuty[2] = {0, 0};
-void setDuty(uint8_t channel, uint32_t duty)
-{
-	if (duty != prevDuty[channel])
-	{
-		ledc_set_duty(LEDC_HIGH_SPEED_MODE, (ledc_channel_t)(LEDC_CHANNEL_0+channel), duty);
-		ledc_update_duty(LEDC_HIGH_SPEED_MODE, (ledc_channel_t)(LEDC_CHANNEL_0+channel));
-		prevDuty[channel] = duty;
-	}
-}
-
-static uint32_t prevFrequency[2] = {0, 0};
-void setFrequency(uint8_t channel, uint32_t frequency)
-{
-	if (frequency != prevFrequency[channel])
-	{
-		ledc_set_freq(LEDC_HIGH_SPEED_MODE, (ledc_timer_t)(LEDC_TIMER_0+channel), frequency);
-		prevFrequency[channel] = frequency;
-	}
-}
-
-void setNote(uint8_t channel, uint32_t duty, uint32_t frequency)
-{
-#if defined(QUIET)
-	duty = 5;
-#endif
-	if (frequency == 0 || !enableSound)
-	{
-		setDuty(channel, 0);
-		return;
-	}
-	setDuty(channel, duty);
-	setFrequency(channel, frequency);
+	boardHandle = audio_board_init();
+	audio_hal_ctrl_codec(boardHandle->audio_hal, AUDIO_HAL_CODEC_MODE_DECODE, AUDIO_HAL_CTRL_START);
+	audioQueue = xQueueCreate(4, sizeof(uint8_t*));
 }
