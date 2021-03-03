@@ -35,11 +35,10 @@ static int playlistHandler(http_stream_event_msg_t *message)
 	}
 }
 
-void audioDispatchTask(void *arg)
+static esp_err_t initPipeline()
 {
-	esp_err_t error;
+	esp_err_t error = ESP_OK;
 
-	char *streamURL = (char*)arg;
 	const char *pipelineStages[] = {"get", "cvt", "out"};
 
 	http_stream_cfg_t httpStreamConfig = {};
@@ -97,16 +96,9 @@ void audioDispatchTask(void *arg)
 	error = audio_pipeline_link(pipeline, pipelineStages, 3);
 	LOG_FN_GOTO_IF_ERR(error, "audio_pipeline_link", pipelineLinkFail);
 
-	audio_element_set_uri(httpStream, streamURL);
-	heap_caps_free(streamURL);
-
-	error = audio_pipeline_run(pipeline);
-	LOG_FN_GOTO_IF_ERR(error, "audio_pipeline_run", pipelineRunFail);
-
 success:
 	goto exit;
 
-pipelineRunFail:
 pipelineLinkFail:
 	audio_pipeline_unregister(pipeline, i2sDac);
 registerI2sFail:
@@ -123,6 +115,28 @@ httpStreamFail:
 	audio_pipeline_deinit(pipeline);
 
 exit:
+	return error;
+}
+
+void audioDispatchTask(void *arg)
+{
+	char *streamURL = (char*)arg;
+	if (!pipeline) initPipeline();
+
+	audio_element_pause(httpStream);
+	audio_element_pause(mp3Decoder);
+	audio_pipeline_stop(pipeline);
+	audio_pipeline_wait_for_stop(pipeline);
+	audio_pipeline_terminate(pipeline);
+
+	audio_element_set_uri(httpStream, streamURL);
+	heap_caps_free(streamURL);
+
+	audio_pipeline_reset_ringbuffer(pipeline);
+	audio_pipeline_reset_elements(pipeline);
+
+	audio_pipeline_run(pipeline);
+exit:
 	vTaskDelete(NULL);
 }
 
@@ -130,5 +144,5 @@ void initSound()
 {
 	boardHandle = audio_board_init();
 	audio_hal_ctrl_codec(boardHandle->audio_hal, AUDIO_HAL_CODEC_MODE_DECODE, AUDIO_HAL_CTRL_START);
-	audioQueue = xQueueCreate(4, sizeof(uint8_t*));
+	audioQueue = xQueueCreate(4, sizeof(queue_message*));
 }
