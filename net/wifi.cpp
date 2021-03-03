@@ -1,6 +1,7 @@
 #include <net/wifi.h>
 #include <alloc.h>
-#include <util.h>
+#include <util/queues.h>
+#include <util/log.h>
 #include <net/http.h>
 
 #include <string.h>
@@ -18,8 +19,6 @@
 #include <esp_http_client.h>
 
 static const char *TAG = "wifi";
-
-QueueHandle_t wifiQueueTx = NULL, wifiQueueRx = NULL;
 
 static wifi_config_t wifiConfig;
 
@@ -171,8 +170,6 @@ static void wifiEventLoop(void *args, esp_event_base_t eventBase, int32_t eventI
 		sendQueueData(wifiQueueTx, WIFI_QUEUE_RX_CONNECTED);
 		sendQueueData(wifiQueueTx, WIFI_QUEUE_RX_IP_ADDRESS, ipAddress);
 		sendQueueData(wifiQueueTx, WIFI_QUEUE_RX_GATEWAY_ADDRESS, gatewayAddress);
-
-		sendQueueData(radioQueueTx, RADIO_QUEUE_RX_WIFI_CONNECTED, NULL);
 	}
 }
 

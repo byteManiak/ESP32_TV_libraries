@@ -1,6 +1,6 @@
 #include <menu.h>
 #include <ps2.h>
-#include <util.h>
+#include <util/numeric.h>
 
 Menu::Menu(VGAExtended *vga)
 {

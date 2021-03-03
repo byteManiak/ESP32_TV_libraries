@@ -1,6 +1,5 @@
 #include <driver/uart.h>
 #include <sound.h>
-#include <util.h>
 #include <math.h>
 #include "ps2.h"
 

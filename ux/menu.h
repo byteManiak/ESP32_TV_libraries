@@ -1,7 +1,8 @@
 #pragma once
 
 #include <alloc.h>
-#include <util.h>
+#include <util/numeric.h>
+#include <util/queues.h>
 #include <vga.h>
 #include <submenu.h>
 

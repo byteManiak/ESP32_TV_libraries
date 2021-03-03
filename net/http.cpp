@@ -5,15 +5,13 @@
 #include <esp_http_client.h>
 
 #include <alloc.h>
-#include <util.h>
+#include <util/queues.h>
+#include <util/log.h>
 #include <sound.h>
 
 #include <string.h>
 
 static const char *TAG = "http";
-
-QueueHandle_t httpQueueRx = NULL;
-QueueHandle_t radioQueueTx = NULL, otaQueueTx = NULL;
 
 esp_http_client_handle_t httpClient = NULL;
 
@@ -73,14 +71,4 @@ esp_err_t initHTTP(esp_err_t (*httpEventHandler)(esp_http_client_event_t* event)
 
 ret:
 	return error;
-}
-
-void sendRadioQueueData()
-{
-
-}
-
-void sendOTAQueueData()
-{
-
 }

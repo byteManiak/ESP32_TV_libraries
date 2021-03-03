@@ -15,7 +15,8 @@
 #include <i2s_stream.h>
 
 #include <alloc.h>
-#include <util.h>
+#include <util/log.h>
+#include <util/queues.h>
 
 static const char *TAG = "sound";
 

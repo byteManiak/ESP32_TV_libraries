@@ -1,7 +1,7 @@
 #include <string.h>
 #include <submenu.h>
 #include <alloc.h>
-#include <util.h>
+#include <util/queues.h>
 
 Submenu::Submenu(VGAExtended *vga, const char *title)
 {
