@@ -142,8 +142,6 @@ void updateKeyboard()
 
 	if (isKeyDown(Ctrl_key) && isKeyDown(Alt_key) && isKeyDown(Del_key))
 	{
-		setNote(0,0,0);
-		setNote(1,0,0);
 		esp_restart();
 	}
 }

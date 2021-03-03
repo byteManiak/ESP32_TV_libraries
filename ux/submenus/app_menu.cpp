@@ -27,5 +27,5 @@ void AppMenu::receiveQueueData()
 
 void AppMenu::updateSubmenu()
 {
-	
+	updateState();
 }
