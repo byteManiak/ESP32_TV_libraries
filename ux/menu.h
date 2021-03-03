@@ -1,9 +1,9 @@
 #pragma once
 
 #include <alloc.h>
-#include <submenus/submenus.h>
 #include <util.h>
 #include <vga.h>
+#include <submenu.h>
 
 class Menu
 {

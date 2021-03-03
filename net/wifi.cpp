@@ -1,4 +1,4 @@
-#include <wifi/wifi.h>
+#include <net/wifi.h>
 #include <alloc.h>
 #include <util.h>
 #include <net/http.h>

@@ -41,13 +41,13 @@ void calculateTimeDelta()
 static constexpr double lerpFactor = 3;
 void smoothLerp(double &from, double &to)
 {
-	// Scale the scroll speed with the distance for a smooth animation
+	// Scale the lerp speed with the distance for a smooth animation
 	double distance = abs(from-to);
-	double scrollSpeed = distance * timeDelta * lerpFactor;
+	double lerpSpeed = distance * timeDelta * lerpFactor;
 
 	// Move radial menu towards the new destination
-	if (from > to) from -= scrollSpeed;
-	else from += scrollSpeed;
+	if (from > to) from -= lerpSpeed;
+	else from += lerpSpeed;
 }
 
 esp_err_t sendQueueData(QueueHandle_t &queue, uint8_t msg_flags, const char *msg_text, uint32_t delay)

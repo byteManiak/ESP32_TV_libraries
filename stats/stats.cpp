@@ -2,7 +2,7 @@
 #include <vga.h>
 
 #if defined(CONFIG_DEBUG_VGA_PROJ)
-void printMemStat(VGAExtended *vga, uint32_t heap_caps)
+static void printMemStat(VGAExtended *vga, uint32_t heap_caps)
 {
 	// Get heap info
 	multi_heap_info_t heap_info = {};

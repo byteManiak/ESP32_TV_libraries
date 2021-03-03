@@ -87,7 +87,7 @@ void Menu::drawMenu()
             y2 = vga->yres/2 + vga->yres/2.5f * s;
             vga->drawLine(x1, y1, x2, y2, vga->RGB(color));
 
-            uint16_t printSubmenu;
+            uint16_t printSubmenu = 0;
             // If on the bottom 3 "needles" visible on the screen
             if (offsetPos <= 2)
             {
