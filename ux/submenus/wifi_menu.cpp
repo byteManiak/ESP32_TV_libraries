@@ -5,7 +5,7 @@
 #include <alloc.h>
 #include <ps2.h>
 #include <util.h>
-#include <wifi/common.h>
+#include <wifi/wifi.h>
 
 WifiMenu::WifiMenu(VGAExtended *vga, const char *title) : Submenu(vga, title)
 {

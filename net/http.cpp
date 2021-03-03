@@ -40,6 +40,7 @@ void parseURL()
 	LOG_INFO("VALUE 1 is %d", requestValues[0]);
 	if (val2) LOG_INFO("VALUE 2 is %d", requestValues[1]);
 }
+
 static esp_err_t httpEventHandler(esp_http_client_event_t *event)
 {
 	switch(event->event_id)

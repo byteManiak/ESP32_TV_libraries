@@ -11,8 +11,7 @@
 #include <menu.h>
 #include <sound.h>
 #include <filesystem.h>
-#include <wifi/common.h>
-#include <wifi/server.h>
+#include <wifi/wifi.h>
 #include <net/http.h>
 
 VGAExtended *vga;

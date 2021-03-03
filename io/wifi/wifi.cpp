@@ -1,5 +1,4 @@
-#include <wifi/common.h>
-#include <wifi/server.h>
+#include <wifi/wifi.h>
 #include <alloc.h>
 #include <util.h>
 #include <net/http.h>
@@ -18,7 +17,9 @@
 #include <esp_netif_ip_addr.h>
 #include <esp_http_client.h>
 
-static const char *TAG = "wifi-server";
+static const char *TAG = "wifi";
+
+QueueHandle_t wifiQueueTx = NULL, wifiQueueRx = NULL;
 
 static wifi_config_t wifiConfig;
 
@@ -31,12 +32,34 @@ static uint8_t connectRetryCount = 0;
 static void wifiEventLoop(void*, esp_event_base_t, int32_t, void*);
 static void wifiStateMachine(void *pvParams);
 
-esp_err_t createWifiTasks()
+static esp_err_t createWifiTasks()
 {
 	BaseType_t error = xTaskCreatePinnedToCore(wifiStateMachine, "WiFi", 4096, NULL, WIFI_TASK_PRIORITY, &wifiTask, 1);
 	if (error != pdPASS) return ESP_ERR_NO_MEM;
 
 	return ESP_OK;
+}
+
+static esp_err_t createWifiQueues()
+{
+	wifiQueueTx = xQueueCreate(8, sizeof(queue_message*));
+	LOG_FN_GOTO_IF_NULL(wifiQueueTx, "xQueueCreate:1", txQueueFail);
+	wifiQueueRx = xQueueCreate(32, sizeof(queue_message*));
+	LOG_FN_GOTO_IF_NULL(wifiQueueRx, "xQueueCreate:2", rxQueueFail);
+
+	return ESP_OK;
+
+rxQueueFail:
+	vQueueDelete(wifiQueueTx);
+	wifiQueueTx = NULL;
+txQueueFail:
+	return ESP_ERR_NO_MEM;
+}
+
+static void destroyWifiQueues()
+{
+	vQueueDelete(wifiQueueTx);
+	vQueueDelete(wifiQueueRx);
 }
 
 esp_err_t initWifi()

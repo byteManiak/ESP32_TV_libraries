@@ -1,3 +1,8 @@
+/**
+ * @file wifi.h
+ * @brief Contains objects and functions used to provide WiFi functionality.
+ **/
+
 #pragma once
 
 #include <freertos/FreeRTOS.h>
@@ -29,11 +34,6 @@ enum wifi_queue_rx_flag {
 extern QueueHandle_t wifiQueueTx, wifiQueueRx;
 
 /**
- * @brief Creates the queues that will be used to receive and send Wi-Fi state data.
+ * @brief Initializes Wi-Fi structures. Must be called before VGA code starts.
  */
-esp_err_t createWifiQueues();
-
-/**
- * @brief Destroys the queues used to receive and send Wi-Fi state data.
- */
-void destroyWifiQueues();
+esp_err_t initWifi();
