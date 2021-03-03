@@ -22,6 +22,10 @@ public:
 	 * @param queueRx Low-level queue to read data from.
 	 */
 	void attachQueues(QueueHandle_t queueTx, QueueHandle_t queueRx);
+
+	/**
+	 * @brief Update the submenu's state and UI elements.
+	 */
 	virtual void updateSubmenu() = 0;
 
 	/**
@@ -75,8 +79,9 @@ protected:
 	int16_t offsetX = 0;
 	// Establish whether this menu is the currently opened one.
 	bool isActive = false;
-
+	// Title of the submenu as shown on the radial main menu.
 	char title[64];
 
+	// Handles of queues to send and receive data from, if needed.
 	QueueHandle_t queueRx = NULL, queueTx = NULL;
 };
