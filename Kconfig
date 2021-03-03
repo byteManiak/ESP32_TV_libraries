@@ -6,4 +6,11 @@ config DEBUG_VGA_PROJ
 config DEBUG_SHOW_FPS
 	bool "Enables debug FPS counter."
 
+config HTTP_SERVER_URL
+	string "Address without port of the http server storing radio links and user apps"
+	default "http://192.168.0.112"
+
+config HTTP_SERVER_PORT
+	string "Port of the http server storing radio links and user apps"
+	default "25565"
 endmenu
