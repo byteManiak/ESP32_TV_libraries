@@ -1,4 +1,5 @@
-#include <vga.h>
+#include <vga/vga.h>
+
 #include <string.h>
 
 long VGAExtended::getPercentGradient(double percent)

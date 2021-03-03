@@ -1,7 +1,7 @@
+#include <io/ps2.h>
+
 #include <driver/uart.h>
-#include <sound.h>
 #include <math.h>
-#include "ps2.h"
 
 // Holds current state of all keys as 1-bit flags
 static uint32_t ps2Keys[4];
@@ -170,10 +170,9 @@ bool isKeyDown(char keycode)
 
 char getLastAsciiKey()
 {
+	// Iterate through all ASCII characters to see if the current key is one of them
 	for(int i = 0; i < sizeof(asciiMappings)/sizeof(asciiMapping); i++)
 		if (isKeyPressed(asciiMappings[i].scanCode))
-		{
 			return isShiftPressed ? asciiMappings[i].asciiCodeShift : asciiMappings[i].asciiCode;
-		}
 	return 0;
 }

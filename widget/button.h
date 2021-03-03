@@ -2,7 +2,7 @@
 
 #include <string.h>
 
-#include <ps2.h>
+#include <io/ps2.h>
 #include <util/queues.h>
 #include <util/numeric.h>
 

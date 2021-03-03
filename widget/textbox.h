@@ -1,8 +1,7 @@
 #pragma once
 
-#include <ps2.h>
-
-#include <widget.h>
+#include <io/ps2.h>
+#include <widget/widget.h>
 
 enum TextboxState
 {

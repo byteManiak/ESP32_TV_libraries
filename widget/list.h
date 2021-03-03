@@ -2,9 +2,9 @@
 
 #include <string.h>
 
-#include <alloc.h>
-#include <ps2.h>
-#include <widget.h>
+#include <memory/alloc.h>
+#include <io/ps2.h>
+#include <widget/widget.h>
 #include <util/numeric.h>
 #include <util/queues.h>
 

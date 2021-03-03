@@ -14,7 +14,7 @@
 #include <mp3_decoder.h>
 #include <i2s_stream.h>
 
-#include <alloc.h>
+#include <memory/alloc.h>
 #include <util/log.h>
 #include <util/queues.h>
 

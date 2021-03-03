@@ -1,5 +1,6 @@
 #include <net/wifi.h>
-#include <alloc.h>
+
+#include <memory/alloc.h>
 #include <util/queues.h>
 #include <util/log.h>
 #include <net/http.h>

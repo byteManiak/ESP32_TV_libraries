@@ -4,7 +4,7 @@
 #include <sys/time.h>
 #include <esp_timer.h>
 
-#include <alloc.h>
+#include <memory/alloc.h>
 
 static const char *TAG = "util";
 

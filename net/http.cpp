@@ -4,10 +4,10 @@
 #include <freertos/task.h>
 #include <esp_http_client.h>
 
-#include <alloc.h>
+#include <memory/alloc.h>
 #include <util/queues.h>
 #include <util/log.h>
-#include <sound.h>
+#include <io/sound.h>
 
 #include <string.h>
 

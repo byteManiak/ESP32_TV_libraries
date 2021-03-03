@@ -2,7 +2,7 @@
 
 #include <VGA/VGA6Bit.h>
 
-#include <alloc.h>
+#include <memory/alloc.h>
 
 enum DrawableType {
     DRAWABLE_LINE,

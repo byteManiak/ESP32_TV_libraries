@@ -1,10 +1,10 @@
 #pragma once
 
-#include <alloc.h>
+#include <memory/alloc.h>
 #include <util/numeric.h>
 #include <util/queues.h>
-#include <vga.h>
-#include <submenu.h>
+#include <vga/vga.h>
+#include <ux/submenu.h>
 
 class Menu
 {

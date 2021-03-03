@@ -3,9 +3,9 @@
 #include <freertos/FreeRTOS.h>
 #include <freertos/queue.h>
 
-#include <alloc.h>
-#include <vga.h>
-#include <widget.h>
+#include <memory/alloc.h>
+#include <vga/vga.h>
+#include <widget/widget.h>
 
 class Submenu
 {

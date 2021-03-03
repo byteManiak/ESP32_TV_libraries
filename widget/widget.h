@@ -2,7 +2,8 @@
 
 #include <freertos/FreeRTOS.h>
 #include <freertos/queue.h>
-#include <vga.h>
+
+#include <vga/vga.h>
 
 class Widget
 {

@@ -1,6 +1,8 @@
-#include <string.h>
 #include <submenu.h>
-#include <alloc.h>
+
+#include <string.h>
+
+#include <memory/alloc.h>
 #include <util/queues.h>
 
 Submenu::Submenu(VGAExtended *vga, const char *title)
