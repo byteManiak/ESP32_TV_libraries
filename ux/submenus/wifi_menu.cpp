@@ -13,10 +13,11 @@ WifiMenu::WifiMenu(VGAExtended *vga, const char *title) : Submenu(vga, title)
 
     actionButton = heap_caps_malloc_cast<Button>(MALLOC_CAP_PREFERRED);
     new (actionButton) Button(vga, "Begin WiFi scan", vga->xres/2 + vga->xres/16, vga->yres/6);
+    actionButton->setFillColor(56);
     widgets.push_back(actionButton);
 
     ssidList = heap_caps_malloc_cast<List<char*>>(MALLOC_CAP_PREFERRED);
-    new (ssidList) List<char*>(vga, vga->xres/2 + vga->xres/16, vga->yres/4, 8);
+    new (ssidList) List<char*>(vga, vga->xres/2 + vga->xres/16, vga->yres/4, 8, true);
     widgets.push_back(ssidList);
 
     ipDetails = heap_caps_malloc_cast<Button>(MALLOC_CAP_PREFERRED);
@@ -36,7 +37,7 @@ void WifiMenu::receiveQueueData()
 {
     if (queueRx)
     {
-        wifi_queue_message *rxMessage;
+        queue_message *rxMessage;
         if (xQueueReceive(queueRx, &rxMessage, 0) == pdTRUE)
         {
             switch (rxMessage->msg_flags)
@@ -100,28 +101,18 @@ void WifiMenu::receiveQueueData()
 
 void WifiMenu::updateSubmenu()
 {
-    // TODO: Ideally, any block of code that sends out an event
-    // should be contained within its own UI element, e.g. a button, list, dialog etc
-    receiveQueueData();
-
-    // Update all widgets in case an event is received from wifi thread
-    int8_t focusedWidgetResult = -1;
-    for(int i = 0; i < widgets.size(); i++)
-    {
-        int8_t result = widgets[i]->update();
-        if (widgets[i] == focusedWidget)
-            focusedWidgetResult = result;
-    }
+    updateState();
 
     // Logic for the wifi menu
     switch (state)
     {
         case WIFI_MENU_STATE_DEFAULT:
         {
-            if (focusedWidgetResult == 1)
+            bool isButtonPushed = actionButton->getStatus();
+            if (isButtonPushed)
             {
-                BaseType_t e = sendWifiQueueData(queueTx, WIFI_QUEUE_TX_USER_BEGIN_SCAN, NULL);
-                if (e == pdTRUE)
+                esp_err_t error = sendQueueData(queueTx, WIFI_QUEUE_TX_USER_BEGIN_SCAN, NULL);
+                if (error == ESP_OK)
                 {
                     ssidList->clear();
                     ESP_LOGI("menu", "Sent scan event to queue %p", queueTx);
@@ -142,10 +133,11 @@ void WifiMenu::updateSubmenu()
             // Logic for choosing a SSID for which to enter a password and then connect to
             if (!ssidList->isEmpty())
             {
-                if (focusedWidgetResult != -1)
+                int8_t listElementIndex = ssidList->getStatus();
+                if (listElementIndex != -1)
                 {
-                    BaseType_t e = sendWifiQueueData(queueTx, WIFI_QUEUE_TX_USER_SSID, ssidList->getElement());
-                    if (e == pdPASS)
+                    esp_err_t e = sendQueueData(queueTx, WIFI_QUEUE_TX_USER_SSID, ssidList->getElement());
+                    if (e == ESP_OK)
                     {
                         // Force the menu into entering the state where a password can be input
                         state = WIFI_MENU_STATE_QUERY_PASSWORD;
@@ -163,10 +155,11 @@ void WifiMenu::updateSubmenu()
 
         case WIFI_MENU_STATE_QUERY_PASSWORD:
         {
-            if (focusedWidgetResult == 1)
+            int8_t textboxState = passwordTextbox->getStatus();
+            if (textboxState == TEXTBOX_ENTER)
             {
-                BaseType_t e = sendWifiQueueData(queueTx, WIFI_QUEUE_TX_USER_PSK, passwordTextbox->getText());
-                if (e == pdTRUE)
+                esp_err_t error = sendQueueData(queueTx, WIFI_QUEUE_TX_USER_PSK, passwordTextbox->getText());
+                if (error == ESP_OK)
                 {
                     actionButton->setText("Connecting...");
                     ssidList->clear();
@@ -178,7 +171,7 @@ void WifiMenu::updateSubmenu()
                     heap_caps_free(passwordTextbox);
                 }
             }
-            else if (focusedWidgetResult == 2)
+            else if (textboxState == TEXTBOX_CANCEL)
             {
                 state = WIFI_MENU_STATE_CHOOSE_SSID;
                 setFocusedWidget(SSID_LIST);
@@ -199,9 +192,10 @@ void WifiMenu::updateSubmenu()
 
         case WIFI_MENU_STATE_DISCONNECTED:
         {
-            if (focusedWidgetResult == 1)
+            bool isButtonPushed = actionButton->getStatus();
+            if (isButtonPushed)
             {
-                BaseType_t e = sendWifiQueueData(queueTx, WIFI_QUEUE_TX_USER_BEGIN_SCAN, NULL);
+                BaseType_t e = sendQueueData(queueTx, WIFI_QUEUE_TX_USER_BEGIN_SCAN, NULL);
                 if (e == pdTRUE)
                 {
                     ssidList->clear();
