@@ -13,16 +13,18 @@ public:
     Button(VGAExtended *vga, const char *text, int16_t x, int16_t y)
         : Widget(vga, x, y) {strlcpy(this->text, text, 32);}
 
-    int8_t update()
+    void update()
     {
-        if (isKeyPressed(Enter_key)) buttonPushed = true;
+        // This boolean is separate from buttonPushed to avoid
+        // considering the status of the button as pressed when the
+        // Enter key is held down. This is done to avoid sending
+        // messages to the low-level queues once every frame.
+        bool buttonPressed = false;
+        if (isKeyPressed(Enter_key)) { buttonPressed = true; buttonPushed = true; }
         else if(isKeyReleased(Enter_key)) buttonPushed = false;
 
-        if (isFocused)
-        {
-            return buttonPushed;
-        }
-        return 0;
+        if (isFocused) status = buttonPressed;
+        else status = 0;
     }
 
     void setText(const char *text)
