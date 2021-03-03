@@ -1,8 +1,11 @@
 #pragma once
 
+#include <string.h>
+
 #include <alloc.h>
 #include <ps2.h>
 #include <widget.h>
+#include <util.h>
 
 template <typename T>
 class List : public Widget
