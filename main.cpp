@@ -10,8 +10,10 @@
 #include <vga.h>
 #include <menu.h>
 #include <sound.h>
+#include <filesystem.h>
 #include <wifi/common.h>
 #include <wifi/server.h>
+#include <net/http.h>
 
 VGAExtended *vga;
 
@@ -19,6 +21,8 @@ const int r[] = {13, 12}, g[] = {14, 27}, b[] = {33, 32};
 
 Menu *menu;
 WifiMenu *wifiMenu;
+AppMenu *appMenu;
+RadioMenu *radioMenu;
 
 void loop();
 
@@ -26,9 +30,13 @@ extern "C" void app_main()
 {
 	srand(time(NULL));
 
-	esp_event_loop_create_default();
+	initFilesystem();
+	initSound();
 	initKeyboard();
+
+	esp_event_loop_create_default();
 	initWifi();
+	initHTTP();
 
 	vga = heap_caps_malloc_construct<VGAExtended>(MALLOC_CAP_PREFERRED);
 
@@ -45,18 +53,21 @@ extern "C" void app_main()
 	wifiMenu = heap_caps_malloc_construct<WifiMenu, VGAExtended*, const char*>(MALLOC_CAP_PREFERRED, vga, "Wi-Fi");
 	menu->addSubMenu(wifiMenu);
 
+	appMenu = heap_caps_malloc_construct<AppMenu, VGAExtended*, const char*>(MALLOC_CAP_PREFERRED, vga, "Apps");
+	menu->addSubMenu(appMenu);
+
+	radioMenu = heap_caps_malloc_construct<RadioMenu, VGAExtended*, const char*>(MALLOC_CAP_PREFERRED, vga, "Radio");
+	menu->addSubMenu(radioMenu);
+
 	// Establish the background color of the screen
 	vga->clear(21);
 	vga->backColor = 21;
-
-	initSound();
 
 	for(;;) loop();
 }
 
 void loop()
 {
-	if (isKeyPressed(ScrLock_key)) enableSound = !enableSound;
 	// Get time spent to render last frame
 	calculateTimeDelta();
 
