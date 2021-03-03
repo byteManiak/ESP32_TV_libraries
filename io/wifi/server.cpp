@@ -2,6 +2,7 @@
 #include <wifi/server.h>
 #include <alloc.h>
 #include <util.h>
+#include <net/http.h>
 
 #include <string.h>
 
@@ -15,6 +16,7 @@
 #include <nvs_flash.h>
 
 #include <esp_netif_ip_addr.h>
+#include <esp_http_client.h>
 
 static const char *TAG = "wifi-server";
 
@@ -29,52 +31,93 @@ static uint8_t connectRetryCount = 0;
 static void wifiEventLoop(void*, esp_event_base_t, int32_t, void*);
 static void wifiStateMachine(void *pvParams);
 
-void createWifiTasks()
+esp_err_t createWifiTasks()
 {
-	xTaskCreatePinnedToCore(wifiStateMachine, "WiFi", 4096, NULL, tskIDLE_PRIORITY, &wifiTask, 1);
+	BaseType_t error = xTaskCreatePinnedToCore(wifiStateMachine, "WiFi", 4096, NULL, WIFI_TASK_PRIORITY, &wifiTask, 1);
+	if (error != pdPASS) return ESP_ERR_NO_MEM;
+
+	return ESP_OK;
 }
 
-void initWifi()
+esp_err_t initWifi()
 {
 	esp_event_handler_instance_t wifiEvent, ipEvent;
-
-	createWifiQueues();
-
-	esp_err_t e = nvs_flash_init();
-	LOG_FN(e, "nvs_flash_init");
-
-	e = esp_netif_init();
-	LOG_FN(e, "esp_netif_init");
-
-	esp_netif_t *interface = esp_netif_create_default_wifi_sta();
-	LOG_PTR(interface, "esp_netif_create_default_wifi_sta");
-
+	esp_netif_t *interface;
 	wifi_init_config_t initConfig = WIFI_INIT_CONFIG_DEFAULT();
-	e = esp_wifi_init(&initConfig);
-	LOG_FN(e, "esp_wifi_init");
 
-	e = esp_wifi_set_mode(WIFI_MODE_STA);
-	LOG_FN(e, "esp_wifi_set_mode");
+	esp_err_t error = createWifiQueues();
+	LOG_FN_GOTO_IF_ERR(error, "createWifiQueues", queuesFail);
 
-	createWifiTasks();
+	error = nvs_flash_init();
+	LOG_FN_GOTO_IF_ERR(error, "nvs_flash_init", nvsFail);
+
+	error = esp_netif_init();
+	LOG_FN_GOTO_IF_ERR(error, "esp_netif_init", netifFail);
+
+	interface = esp_netif_create_default_wifi_sta();
+	if (!interface)
+	{
+		error = ESP_ERR_NO_MEM;
+		LOG_FN_GOTO_IF_NULL(interface, "esp_netif_create_default_wifi_sta", netifStaFail);
+	}
+
+	error = esp_wifi_init(&initConfig);
+	LOG_FN_GOTO_IF_ERR(error, "esp_wifi_init", wifiInitFail);
+
+	error = esp_wifi_set_mode(WIFI_MODE_STA);
+	LOG_FN_GOTO_IF_ERR(error, "esp_wifi_set_mode", wifiModeFail);
+
+	error = createWifiTasks();
+	LOG_FN_GOTO_IF_ERR(error, "createWifiTasks", wifiTaskFail);
 
 	wifiEventGroup = xEventGroupCreate();
+	if (!wifiEventGroup)
+	{
+		error = ESP_ERR_NO_MEM;
+		LOG_FN_GOTO_IF_NULL(wifiEvent, "xEventGroupCreate", eventGroupFail);	
+	}
 
-	e = esp_wifi_start();
-	LOG_FN(e, "esp_wifi_start");
+	error = esp_wifi_start();
+	LOG_FN_GOTO_IF_ERR(error, "esp_wifi_start", wifiStartFail);
 
-	e = esp_event_handler_instance_register(WIFI_EVENT,
+	error = esp_event_handler_instance_register(WIFI_EVENT,
 											WIFI_EVENT_STA_CONNECTED | WIFI_EVENT_STA_DISCONNECTED,
 											&wifiEventLoop,
 											NULL,
 											&wifiEvent);
-	LOG_FN(e, "esp_event_handler_instance_register:1");
-	e = esp_event_handler_instance_register(IP_EVENT,
+	LOG_FN_GOTO_IF_ERR(error, "esp_event_handler_instance_register:1", wifiEventRegFail);
+	error = esp_event_handler_instance_register(IP_EVENT,
 											IP_EVENT_STA_GOT_IP,
 											&wifiEventLoop,
 											NULL,
 											&ipEvent);
-	LOG_FN(e, "esp_event_handler_instance_register:1");
+	LOG_FN_GOTO_IF_ERR(error, "esp_event_handler_instance_register:1", ipEventRegFail);
+
+success:
+	return ESP_OK;
+
+ipEventRegFail:
+	esp_event_handler_instance_unregister(WIFI_EVENT, 
+										  WIFI_EVENT_STA_CONNECTED | WIFI_EVENT_STA_DISCONNECTED,
+										  wifiEvent);
+wifiEventRegFail:
+	esp_wifi_stop();
+wifiStartFail:
+	vEventGroupDelete(wifiEventGroup);
+eventGroupFail:
+	vTaskDelete(wifiTask);
+	wifiTask = NULL;
+wifiTaskFail:
+wifiModeFail:
+	esp_wifi_deinit();
+wifiInitFail:
+netifStaFail:
+	esp_netif_deinit();
+netifFail:
+nvsFail:
+	destroyWifiQueues();
+queuesFail:
+	return error;
 }
 
 static void wifiEventLoop(void *args, esp_event_base_t eventBase, int32_t eventId, void *eventData)
@@ -82,7 +125,7 @@ static void wifiEventLoop(void *args, esp_event_base_t eventBase, int32_t eventI
 	if (eventBase == WIFI_EVENT && eventId == WIFI_EVENT_STA_DISCONNECTED)
 	{
 		// Notify the wifi task that a disconnect happened
-		sendWifiQueueData(wifiQueueRx, WIFI_QUEUE_TX_EVENT_DISCONNECTED);
+		sendQueueData(wifiQueueRx, WIFI_QUEUE_TX_EVENT_DISCONNECTED);
 	}
 	else if (eventBase == IP_EVENT && eventId == IP_EVENT_STA_GOT_IP)
 	{
@@ -102,9 +145,11 @@ static void wifiEventLoop(void *args, esp_event_base_t eventBase, int32_t eventI
 								(gatewayAddressInt & 0xFF00) >> 8,
 								(gatewayAddressInt & 0xFF0000) >> 16,
 								(gatewayAddressInt & 0xFF000000) >> 24 );
-		sendWifiQueueData(wifiQueueTx, WIFI_QUEUE_RX_CONNECTED);
-		sendWifiQueueData(wifiQueueTx, WIFI_QUEUE_RX_IP_ADDRESS, ipAddress);
-		sendWifiQueueData(wifiQueueTx, WIFI_QUEUE_RX_GATEWAY_ADDRESS, gatewayAddress);
+		sendQueueData(wifiQueueTx, WIFI_QUEUE_RX_CONNECTED);
+		sendQueueData(wifiQueueTx, WIFI_QUEUE_RX_IP_ADDRESS, ipAddress);
+		sendQueueData(wifiQueueTx, WIFI_QUEUE_RX_GATEWAY_ADDRESS, gatewayAddress);
+
+		sendQueueData(radioQueueTx, RADIO_QUEUE_RX_WIFI_CONNECTED, NULL);
 	}
 }
 
@@ -113,11 +158,11 @@ void wifiStateMachine(void *pvParams)
 {
 	for(;;)
 	{
-		esp_err_t e;
+		esp_err_t error;
 
 		if (!(wifiQueueRx && wifiQueueTx)) continue;
 
-		wifi_queue_message *rxMessage;
+		queue_message *rxMessage;
 		if (xQueueReceive(wifiQueueRx, &rxMessage, 0) == pdTRUE)
 		{
 			switch(rxMessage->msg_flags)
@@ -130,19 +175,19 @@ void wifiStateMachine(void *pvParams)
 
 					ESP_LOGI(TAG, "Received scan event from queue %p", wifiQueueRx);
 
-					e = esp_wifi_scan_start(&scanConfig, true);
-					LOG_FN(e, "esp_wifi_scan_start");
+					error = esp_wifi_scan_start(&scanConfig, true);
+					LOG_FN(error, "esp_wifi_scan_start");
 
 					uint16_t apScanResultsMax = 8;
 					wifi_ap_record_t apScanResults[8];
-					e = esp_wifi_scan_get_ap_records(&apScanResultsMax, apScanResults);
-					LOG_FN(e, "esp_wifi_scan_get_ap_records");
+					error = esp_wifi_scan_get_ap_records(&apScanResultsMax, apScanResults);
+					LOG_FN(error, "esp_wifi_scan_get_ap_records");
 
 					for(int i = 0; i < apScanResultsMax; i++)	
 					{
 						ESP_LOGI(TAG, "Found network %d: %s", i+1, apScanResults[i].ssid);
 
-						sendWifiQueueData(wifiQueueTx, WIFI_QUEUE_RX_SCAN_RESULT, (char*)apScanResults[i].ssid);
+						sendQueueData(wifiQueueTx, WIFI_QUEUE_RX_SCAN_RESULT, (char*)apScanResults[i].ssid);
 					}
 					break;
 				}
@@ -174,7 +219,7 @@ void wifiStateMachine(void *pvParams)
 						esp_wifi_connect();
 						break;
 					}
-					sendWifiQueueData(wifiQueueTx, WIFI_QUEUE_RX_DISCONNECTED, nullptr);
+					sendQueueData(wifiQueueTx, WIFI_QUEUE_RX_DISCONNECTED, NULL);
 				}
 			}
 			heap_caps_free(rxMessage);

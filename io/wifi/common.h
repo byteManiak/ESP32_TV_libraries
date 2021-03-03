@@ -25,25 +25,15 @@ enum wifi_queue_rx_flag {
     WIFI_QUEUE_RX_DISCONNECTED
 };
 
-struct wifi_queue_message
-{
-    char msg_text[65];
-    uint8_t msg_flags;
-};
-
 // Queues used to communicate between VGA thread and wifi task.
 extern QueueHandle_t wifiQueueTx, wifiQueueRx;
 
 /**
  * @brief Creates the queues that will be used to receive and send Wi-Fi state data.
  */
-void createWifiQueues();
+esp_err_t createWifiQueues();
 
 /**
- * @brief Send data for a wifi_queue_message to a WiFi queue
- * 
- * @param queue Queue to send data to
- * @param msg_flags Flags to indicate action to take
- * @param msg_text Text to accompany certain flags
+ * @brief Destroys the queues used to receive and send Wi-Fi state data.
  */
-BaseType_t sendWifiQueueData(QueueHandle_t &queue, uint8_t msg_flags, const char *msg_text = nullptr);
+void destroyWifiQueues();
