@@ -12,53 +12,68 @@ class Submenu
 public:
 	Submenu(VGAExtended *vga, const char *title);
 	~Submenu() = default;
-	virtual void attachQueues(QueueHandle_t queueTx, QueueHandle_t queueRx);
+
+	/**
+	 * @brief Attach low-level event queues to send/receive data from.
+	 * NOTE: In this case Tx/Rx denote the respective Rx/Tx low-level queues.
+	 * For example: attachQueues(wifiQueueRx, wifiQueueTx) will enable the user
+	 * to SEND data to the wifi module's rx queue, and to RECEIVE data from its tx queue.
+	 * @param queueTx Low-level queue to send data to.
+	 * @param queueRx Low-level queue to read data from.
+	 */
+	void attachQueues(QueueHandle_t queueTx, QueueHandle_t queueRx);
 	virtual void updateSubmenu() = 0;
-	void drawSubmenu()
-	{
-		if (isActive) offsetX = 0;
-		else offsetX = vga->xres;
 
-	for(int i = 0; i < widgets.size(); i++)
-		widgets[i]->draw(offsetX);
-	}
+	/**
+	 * @brief Draw this submenu.
+	 */
+	void drawSubmenu();
 
+	/**
+	 * @brief Draw the title of this submenu on the main menu list.
+	 */
 	void drawTitle();
 
-	void setActiveSubmenu(bool isActive)
-	{
-		this->isActive = isActive;
-		if (widgets.size() > 0)
-		{
-			if (isActive) setFocusedWidget(focusedWidgetIndex);
-			else setFocusedWidget(-1);
-		}
-	}
-
+	/**
+	 * @brief Flag this submenu as the active one.
+	 */
+	void setActiveSubmenu(bool isActive);
 	bool isActiveMenu = false;
 
+	/**
+	 * @brief Set the n-th widget in the widgets vector as the active one
+	 * 
+	 * @param widgetNum The index of the widget to set as active
+	 */
+	void setFocusedWidget(int8_t widgetNum);
+
+	/**
+	 * @brief Refresh state of the menu by reading from rx/tx queues and
+	 * checking user input / changes from widgets.
+	 * NOTE: Call before menu state handling in updateSubmenu().
+	 */
+	void updateState();
+
 protected:
-	void setFocusedWidget(int8_t widgetNum)
-	{
-		// Unfocus the current widget
-		if (focusedWidget) focusedWidget->setFocused(false);
 
-		if (widgetNum < 0) {focusedWidget = NULL; return;}
-
-		// Focus the new widget
-		focusedWidget = widgets[widgetNum];
-		focusedWidgetIndex = widgetNum;
-		focusedWidget->setFocused(true);
-	}
-
+	/**
+	 * @brief Wait for external data from low-level handlers to advance the menu's state.
+	 * The queue handles must be valid when calling this function, otherwise the menu state
+	 * most likely won't be updated.
+	 */
 	virtual void receiveQueueData() = 0;
 
+	// Handle for the currently focused widget
 	uint8_t focusedWidgetIndex = 0;
+	// Handle for the currently focused widget
 	Widget *focusedWidget = NULL;
+	// Vector storing all the submenu's widgets
 	heap_caps_vector<Widget*> widgets;
 
 	VGAExtended *vga;
+	// Offset of the submenu to enable smooth animation transition when [de]selecting it
 	int16_t offsetX = 0;
+	// Establish whether this menu is the currently opened one.
 	bool isActive = false;
 
 	char title[64];
