@@ -42,39 +42,65 @@ void VGAExtended::printBox(const char *text, int x, int y, unsigned char textCol
 
 void VGAExtended::drawLine(int x1, int y1, int x2, int y2, unsigned char color)
 {
-	DrawableLine *l = heap_caps_malloc_cast<DrawableLine>(MALLOC_CAP_PREFERRED);
-	l->type = DRAWABLE_LINE;
-	l->x1 = x1; l->y1 = y1; l->x2 = x2; l->y2 = y2; l->color = color;
-	nextFrameDrawables.push_back((Drawable*)l);
+	if (frameBufferCount == 1)
+	{
+		DrawableLine *l = heap_caps_malloc_cast<DrawableLine>(MALLOC_CAP_PREFERRED);
+		l->type = DRAWABLE_LINE;
+		l->x1 = x1; l->y1 = y1; l->x2 = x2; l->y2 = y2; l->color = color;
+		nextFrameDrawables.push_back((Drawable*)l);
+	}
+	else line(x1, y1, x2, y2, color);
 }
 
 void VGAExtended::drawText(const char *text)
 {
-	DrawableText *t = heap_caps_malloc_cast<DrawableText>(MALLOC_CAP_PREFERRED);
-	t->type = DRAWABLE_TEXT;
-	t->x = cursorX; t->y = cursorY; t->color = frontColor;
-	strlcpy(t->text, text, 65);
-	cursorX += strlen(t->text) * font->charWidth;
-	nextFrameDrawables.push_back((Drawable*)t);
+	if (frameBufferCount == 1)
+	{
+		DrawableText *t = heap_caps_malloc_cast<DrawableText>(MALLOC_CAP_PREFERRED);
+		t->type = DRAWABLE_TEXT;
+		t->x = cursorX; t->y = cursorY; t->color = frontColor;
+		strlcpy(t->text, text, 65);
+		cursorX += strlen(t->text) * font->charWidth;
+		nextFrameDrawables.push_back((Drawable*)t);
+	}
+	else print(text);
 }
 
-void VGAExtended::drawRect(int x, int y, int w, int h, unsigned char color, bool fillRect)
+void VGAExtended::drawRect(int x, int y, int w, int h, unsigned char color, bool doFillRect)
 {
-	DrawableRect *r = heap_caps_malloc_cast<DrawableRect>(MALLOC_CAP_PREFERRED);
-	r->type = DRAWABLE_RECT;
-	r->x = x; r->y = y; r->w = w; r->h = h; r->color = color; r->fillRect = fillRect;
-	nextFrameDrawables.push_back((Drawable*)r);
+	if (frameBufferCount == 1)
+	{
+		DrawableRect *r = heap_caps_malloc_cast<DrawableRect>(MALLOC_CAP_PREFERRED);
+		r->type = DRAWABLE_RECT;
+		r->x = x; r->y = y; r->w = w; r->h = h; r->color = color; r->fillRect = doFillRect;
+		nextFrameDrawables.push_back((Drawable*)r);
+	}
+	else
+	{
+		if (doFillRect) rect(x, y, w, h, color);
+		else fillRect(x, y, w, h, color);
+	}
 }
 
 void VGAExtended::drawFloat(float f)
 {
-	char text[65];
-	sprintf(text, "%.2f", f);
-	drawText(text);
+	if (frameBufferCount == 1)
+	{
+		char text[65];
+		sprintf(text, "%.2f", f);
+		drawText(text);
+	}
+	else print(f);
 }
 
 void VGAExtended::showDrawables()
 {
+	if (frameBufferCount == 2)
+	{
+		show();
+		return;
+	}
+
 	// Assume that the contents on screen did not change
 	// in order to avoid unneeded draw calls
 	bool drawablesUnchanged = true;

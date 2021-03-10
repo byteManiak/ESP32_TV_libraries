@@ -49,10 +49,25 @@ public:
     void printBox(const char *text, int x, int y, unsigned char textColor = 63,
                   unsigned char borderColor = 63, unsigned char fillColor = 255, unsigned char spacing = 2);
 
+    /**
+     * @brief Alternative to line(). NOTE: This function's behaviour is different when drawing without a backbuffer.
+     */
     void drawLine(int x1, int x2, int y1, int y2, unsigned char color);
+    /**
+     * @brief Alternative to print(). NOTE: This function's behaviour is different when drawing without a backbuffer.
+     */
     void drawText(const char *text);
+    /**
+     * @brief Alternative to rect()/fillRect(). NOTE: This function's behaviour is different when drawing without a backbuffer.
+     */
     void drawRect(int x, int y, int w, int h, unsigned char color, bool fillRect = false);
+    /**
+     * @brief Alternative to print(). NOTE: This function's behaviour is different when drawing without a backbuffer.
+     */
     void drawFloat(float f);
+    /**
+     * @brief Alternative to show(). NOTE: This function's behaviour is different when drawing without a backbuffer.
+     */
     void showDrawables();
 
 private:
