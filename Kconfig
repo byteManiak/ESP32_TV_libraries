@@ -13,4 +13,8 @@ config HTTP_SERVER_URL
 config HTTP_SERVER_PORT
 	string "Port of the http server storing radio links and user apps"
 	default "25565"
+
+config APP_NAME
+	string "Name of the application (supports spaces unlike PROJECT_NAME)"
+	default "Example App"
 endmenu

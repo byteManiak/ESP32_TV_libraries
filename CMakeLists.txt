@@ -7,3 +7,5 @@ idf_component_register(SRCS ${app_sources}
 
 # Suppress compiler when the project is built in release mode
 set_source_files_properties(${app_sources} PROPERTIES COMPILE_FLAGS "-Wno-unused-label")
+
+target_link_libraries(${COMPONENT_TARGET} "-u tvAppName")
