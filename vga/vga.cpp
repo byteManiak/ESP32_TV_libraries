@@ -77,7 +77,7 @@ void VGAExtended::drawRect(int x, int y, int w, int h, unsigned char color, bool
 	}
 	else
 	{
-		if (doFillRect) rect(x, y, w, h, color);
+		if (!doFillRect) rect(x, y, w, h, color);
 		else fillRect(x, y, w, h, color);
 	}
 }
