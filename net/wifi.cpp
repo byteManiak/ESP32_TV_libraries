@@ -68,6 +68,10 @@ esp_err_t initWifi()
 	esp_netif_t *interface;
 	wifi_init_config_t initConfig = WIFI_INIT_CONFIG_DEFAULT();
 
+	nvs_handle_t nvsWifiCfg;
+	size_t nvsSSIDSize, nvsPSKSize;
+	esp_err_t nvsRet;
+
 	esp_err_t error = createWifiQueues();
 	LOG_FN_GOTO_IF_ERR(error, "createWifiQueues", queuesFail);
 
@@ -115,6 +119,18 @@ esp_err_t initWifi()
 											NULL,
 											&ipEvent);
 	LOG_FN_GOTO_IF_ERR(error, "esp_event_handler_instance_register:1", ipEventRegFail);
+
+	// Optionally connect to a saved Wifi network
+	nvsRet = nvs_open("wifiCfg", NVS_READONLY, &nvsWifiCfg);
+	if (nvsRet != ESP_OK) goto success;
+
+	nvsRet = nvs_get_str(nvsWifiCfg, "ssid", (char*)wifiConfig.sta.ssid, &nvsSSIDSize);
+	if (nvsRet != ESP_OK) goto success;
+	nvsRet = nvs_get_str(nvsWifiCfg, "psk", (char*)wifiConfig.sta.password, &nvsPSKSize);
+	if (nvsRet != ESP_OK) goto success;
+
+	esp_wifi_set_config(WIFI_IF_STA, &wifiConfig);
+	esp_wifi_connect();
 
 success:
 	return ESP_OK;
@@ -171,6 +187,15 @@ static void wifiEventLoop(void *args, esp_event_base_t eventBase, int32_t eventI
 		sendQueueData(wifiQueueTx, WIFI_QUEUE_RX_CONNECTED);
 		sendQueueData(wifiQueueTx, WIFI_QUEUE_RX_IP_ADDRESS, ipAddress);
 		sendQueueData(wifiQueueTx, WIFI_QUEUE_RX_GATEWAY_ADDRESS, gatewayAddress);
+
+		// A successful connection warrants using it as the default one when booting the ESP again
+		nvs_handle_t nvsWifiCfg;
+		nvs_open("wifiCfg", NVS_READWRITE, &nvsWifiCfg);
+		nvs_set_str(nvsWifiCfg, "ssid", (char*)wifiConfig.sta.ssid);
+		nvs_commit(nvsWifiCfg);
+		nvs_set_str(nvsWifiCfg, "psk", (char*)wifiConfig.sta.password);
+		nvs_commit(nvsWifiCfg);
+		nvs_close(nvsWifiCfg);
 	}
 }
 
@@ -216,15 +241,16 @@ void wifiStateMachine(void *pvParams)
 				case WIFI_QUEUE_TX_USER_SSID:
 				{
 					ESP_LOGI(TAG, "Received ssid %s through queue %p", rxMessage->msg_text, wifiQueueRx);
-					strlcpy((char*)wifiConfig.sta.ssid, rxMessage->msg_text, 33);
+					strlcpy((char*)wifiConfig.sta.ssid, rxMessage->msg_text, 32);
 					break;
 				}
 
 				case WIFI_QUEUE_TX_USER_PSK:
 				{
 					ESP_LOGI(TAG, "Received psk %s through queue %p", rxMessage->msg_text, wifiQueueRx);
-					strlcpy((char*)wifiConfig.sta.password, rxMessage->msg_text, 65);
+					strlcpy((char*)wifiConfig.sta.password, rxMessage->msg_text, 64);
 
+					esp_wifi_disconnect();
 					esp_wifi_set_config(WIFI_IF_STA, &wifiConfig);
 					esp_wifi_connect();
 					break;
