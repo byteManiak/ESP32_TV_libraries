@@ -55,7 +55,7 @@ void Submenu::setFocusedWidget(int8_t widgetNum)
     // Unfocus the current widget
     if (focusedWidget) focusedWidget->setFocused(false);
 
-    if (widgetNum < 0) {focusedWidget = NULL; return;}
+    if (widgetNum < 0 || !isActive) {focusedWidget = NULL; return;}
 
     // Focus the new widget
     focusedWidget = widgets[widgetNum];

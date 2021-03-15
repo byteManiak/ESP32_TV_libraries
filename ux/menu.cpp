@@ -15,6 +15,12 @@ void Menu::addSubMenu(Submenu *submenu)
 
 void Menu::drawMenu()
 {
+    for(int i = 0; i < submenus.size(); i++)
+    {
+        submenus[i]->updateSubmenu();
+        submenus[i]->drawSubmenu();
+    }
+
     if (!usingSubmenu)
     {
         if (isKeyPressed(Enter_key))
@@ -44,8 +50,6 @@ void Menu::drawMenu()
     }
     else
     {
-        submenus[currentSubmenu]->updateSubmenu();
-
         if (isKeyPressed(ESC_key))
         {
             submenus[currentSubmenu]->setActiveSubmenu(false);
@@ -54,9 +58,6 @@ void Menu::drawMenu()
 
         offsetDestination = -vga->xres/4;
     }
-
-    for(int i = 0; i < submenus.size(); i++)
-        submenus[i]->drawSubmenu();
 
     // Establish current angle of the menu
     smoothLerp(currentAngle, destinationAngle);

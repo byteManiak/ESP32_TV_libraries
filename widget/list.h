@@ -57,6 +57,7 @@ public:
             heap_caps_free(currentElem);
         }
         listElements.clear();
+        currentElement = 0;
 
         hoverTime = getMillis();
     }
@@ -74,14 +75,12 @@ public:
         {
             if (isKeyPressed(Up_key))
             {
-                currentElement--;
-                if (currentElement < 0) currentElement = 0;
+                currentElement = getPrevInt(currentElement, listElements.size());
                 hoverTime = getMillis();
             }
             if (isKeyPressed(Down_key))
             {
-                currentElement++;
-                if (currentElement > listElements.size()-1) currentElement = listElements.size()-1;
+                currentElement = getNextInt(currentElement, listElements.size());
                 hoverTime = getMillis();
             }
 
