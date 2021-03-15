@@ -106,7 +106,7 @@ void initKeyboard();
 
 /**
  * @brief Read bytes from keyboard and update state of pressed keys.
- *        Must be called at the beginning/end of every frame.
+ * NOTE: Do not call more than once per frame, and make sure to always call this from the same one task.
  */
 void updateKeyboard();
 
