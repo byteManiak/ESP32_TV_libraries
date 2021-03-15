@@ -81,7 +81,7 @@ public:
             if (isKeyPressed(Down_key))
             {
                 currentElement++;
-                if (currentElement > maxListSize-1) currentElement = maxListSize-1;
+                if (currentElement > listElements.size()-1) currentElement = listElements.size()-1;
                 hoverTime = getMillis();
             }
 
@@ -105,7 +105,7 @@ public:
                     // Start scrolling text after 2 seconds of hovering over it
                     int64_t scrollTime = getMillis() - hoverTime;
                     if (scrollText && scrollTime > 2000)
-                        offsetIndex = ((scrollTime - 2000) / 500) % (strlen(listElements[i])-40);
+                        offsetIndex = ((scrollTime - 2000) / 500) % (strlen(listElements[i]));
                 }
                 else
                 {
