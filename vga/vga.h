@@ -4,6 +4,25 @@
 
 #include <memory/alloc.h>
 
+enum Colors {
+    BLACK,          DARK_BROWN,      DARK_RED,    RED,
+    DARK_GREEN,     BROWN,           DARK_RED2,   RED2,
+    GREEN,          GREEN2,          MUSTARD1,    ORANGE,
+    LIGHT_GREEN,    LIGHT_GREEN2,    ACID,        YELLOW,
+    INDIGO,         VIOLET,          WINE,        BUBBLEGUM,
+    INDIGO2,        VIOLET2,         WINE2,       BUBBLEGUM2,
+    GREEN3,         GREEN4,          MUSTARD2,    LIGHT_ORANGE,
+    LIGHT_GREEN3,   LIGHT_GREEN4,    ACID2,       YELLOW2,
+    DARK_BLUE,      DARK_BLUE2,      PURPLE,      MAGENTA,
+    BLUE,           BLUE2,           PURPLE2,     MAGENTA2,
+    MIDNIGHT_GREEN, MIDNIGHT_GREEN2, CHALK_BLUE,  PINK,
+    CYAN,           CYAN2,           LIGHT_CYAN,  CREAM,
+    DARK_BLUE3,     DARK_BLUE4,      PURPLE3,     MAGENTA3,
+    BLUE3,          BLUE4,           PURPLE4,     MAGENTA4,
+    CORNFLOWER,     CORNFLOWER2,     CHALK_BLUE2, PINK2,
+    CYAN3,          CYAN4,           LIGHT_CYAN2, WHITE
+};
+
 enum DrawableType {
     DRAWABLE_LINE,
     DRAWABLE_TEXT,
