@@ -3,10 +3,8 @@
 #include <io/ps2.h>
 #include <util/numeric.h>
 
-Menu::Menu(VGAExtended *vga)
-{
-    this->vga = vga;
-}
+Menu::Menu(VGAExtended *vga, VGAColor activeColor, VGAColor inactiveColor)
+    : vga{vga}, activeColor{activeColor}, inactiveColor{inactiveColor} {}
 
 void Menu::addSubMenu(Submenu *submenu)
 {
@@ -65,7 +63,7 @@ void Menu::drawMenu()
     // Establish offset currentAngle of the menu
     smoothLerp(offsetPosition, offsetDestination);
 
-    vga->setTextColor(vga->RGB(0xFFFFFF), vga->backColor);
+    vga->setTextColor(WHITE, vga->backColor);
 
     // Draw the radial menu
     for (uint8_t i = 0; i < 8; i++)
@@ -75,11 +73,10 @@ void Menu::drawMenu()
         double s = sin(currentAngle + i * sliceSize);
         double c = cos(currentAngle + i * sliceSize);
         double x1, x2, y1, y2;
-        long color = 0x00FFAA;
+        unsigned char color = inactiveColor;
 
         // Change color of center "needle"
-        if (offsetPos == 0)
-            color = 0x00AAFF;
+        if (offsetPos == 0) color = activeColor;
 
         if ((!usingSubmenu) || (usingSubmenu && offsetPos == 0))
         {
@@ -87,7 +84,7 @@ void Menu::drawMenu()
             y1 = vga->yres/2 + vga->yres/16 * s;
             x2 = vga->xres/2.5f * c + offsetPosition;
             y2 = vga->yres/2 + vga->yres/2.5f * s;
-            vga->drawLine(x1, y1, x2, y2, vga->RGB(color));
+            vga->drawLine(x1, y1, x2, y2, color);
 
             uint16_t printSubmenu = 0;
             // If on the bottom 3 "needles" visible on the screen

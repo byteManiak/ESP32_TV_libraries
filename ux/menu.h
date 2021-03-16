@@ -9,7 +9,7 @@
 class Menu
 {
 public:
-	Menu(VGAExtended *vga);
+	Menu(VGAExtended *vga, VGAColor activeColor, VGAColor inactiveColor);
     ~Menu() = default;
 
 	void addSubMenu(Submenu *submenu);
@@ -25,6 +25,7 @@ private:
 
 	// Used for drawing
 	VGAExtended *vga;
+	VGAColor activeColor, inactiveColor;
 	// angle of the radial menu
 	double theta;
 	// used for smooth scrolling of the menu

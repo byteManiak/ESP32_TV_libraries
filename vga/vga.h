@@ -4,7 +4,7 @@
 
 #include <memory/alloc.h>
 
-enum Colors {
+enum VGAColor {
     BLACK,          DARK_BROWN,      DARK_RED,    RED,
     DARK_GREEN,     BROWN,           DARK_RED2,   RED2,
     GREEN,          GREEN2,          MUSTARD1,    ORANGE,
