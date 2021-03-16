@@ -24,3 +24,5 @@ esp_err_t initHTTP(esp_err_t (*httpEventHandler)(esp_http_client_event_t* event)
 	snprintf(url, 256, HTTP_SERVER_ADDRESS "/" getRequest, __VA_ARGS__);
 
 #define GET_REQUEST_URL() (url)
+
+#define FREE_REQUEST_URL() {heap_caps_free(url); }
