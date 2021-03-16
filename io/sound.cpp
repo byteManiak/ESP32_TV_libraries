@@ -124,8 +124,6 @@ void audioDispatchTask(void *arg)
 	char *streamURL = (char*)arg;
 	if (!pipeline) initPipeline();
 
-	audio_element_pause(httpStream);
-	audio_element_pause(mp3Decoder);
 	audio_pipeline_stop(pipeline);
 	audio_pipeline_wait_for_stop(pipeline);
 	audio_pipeline_terminate(pipeline);
