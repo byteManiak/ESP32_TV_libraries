@@ -23,10 +23,10 @@ static esp_err_t createHTTPQueues()
 	radioQueueTx = xQueueCreate(16, sizeof(queue_message*));
 	LOG_FN_GOTO_IF_NULL(radioQueueTx, "xQueueCreate:2", radioQueueFail);
 
-	appQueueTx = xQueueCreate(4, sizeof(queue_message*));
+	appQueueTx = xQueueCreate(16, sizeof(queue_message*));
 	LOG_FN_GOTO_IF_NULL(appQueueTx, "xQueueCreate:3", otaQueueFail);
 
-	newsQueueTx = xQueueCreate(4, sizeof(queue_message*));
+	newsQueueTx = xQueueCreate(16, sizeof(queue_message*));
 	LOG_FN_GOTO_IF_NULL(newsQueueTx, "xQueueCreate:4", newsQueueFail);
 
 	return ESP_OK;
