@@ -107,8 +107,6 @@ esp_err_t initWifi()
 	error = esp_wifi_start();
 	LOG_FN_GOTO_IF_ERR(error, "esp_wifi_start", wifiStartFail);
 
-	esp_event_loop_create_default();
-
 	error = esp_event_handler_instance_register(WIFI_EVENT,
 											WIFI_EVENT_STA_CONNECTED | WIFI_EVENT_STA_DISCONNECTED,
 											&wifiEventLoop,
