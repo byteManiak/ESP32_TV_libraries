@@ -103,7 +103,7 @@ public:
 
                     // Start scrolling text after 2 seconds of hovering over it
                     int64_t scrollTime = getMillis() - hoverTime;
-                    if (scrollText && scrollTime > 2000)
+                    if (isFocused && scrollText && scrollTime > 2000)
                         offsetIndex = ((scrollTime - 2000) / 500) % (strlen(listElements[i]));
                 }
                 else
