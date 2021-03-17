@@ -12,12 +12,6 @@ QueueHandle_t wifiQueueRx = NULL;
 
 QueueHandle_t httpQueueRx = NULL;
 
-QueueHandle_t appQueueTx = NULL;
-
-QueueHandle_t radioQueueTx = NULL;
-
-QueueHandle_t newsQueueTx = NULL;
-
 esp_err_t sendQueueData(QueueHandle_t &queue, uint8_t msg_flags, const char *msg_text, uint32_t delay)
 {
 	if (!queue) return ESP_ERR_INVALID_ARG;

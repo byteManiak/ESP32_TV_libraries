@@ -18,30 +18,8 @@ esp_http_client_handle_t httpClient = NULL;
 static esp_err_t createHTTPQueues()
 {
 	httpQueueRx = xQueueCreate(8, sizeof(queue_message*));
-	LOG_FN_GOTO_IF_NULL(httpQueueRx, "xQueueCreate:1", rxQueueFail);
-
-	radioQueueTx = xQueueCreate(16, sizeof(queue_message*));
-	LOG_FN_GOTO_IF_NULL(radioQueueTx, "xQueueCreate:2", radioQueueFail);
-
-	appQueueTx = xQueueCreate(16, sizeof(queue_message*));
-	LOG_FN_GOTO_IF_NULL(appQueueTx, "xQueueCreate:3", otaQueueFail);
-
-	newsQueueTx = xQueueCreate(16, sizeof(queue_message*));
-	LOG_FN_GOTO_IF_NULL(newsQueueTx, "xQueueCreate:4", newsQueueFail);
-
+	if (!httpQueueRx) return ESP_ERR_NO_MEM;
 	return ESP_OK;
-
-newsQueueFail:
-	vQueueDelete(appQueueTx);
-	appQueueTx = NULL;
-otaQueueFail:
-	vQueueDelete(radioQueueTx);
-	radioQueueTx = NULL;
-radioQueueFail:
-	vQueueDelete(httpQueueRx);
-	httpQueueRx = NULL;
-rxQueueFail:
-	return ESP_ERR_NO_MEM;
 }
 
 void httpServer(void *arg)
