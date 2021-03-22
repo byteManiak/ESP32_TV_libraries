@@ -22,17 +22,41 @@ static esp_err_t createHTTPQueues()
 	return ESP_OK;
 }
 
+static char *replaceSpaces(char *str)
+{
+	if (!strstr(str, " ")) return strdup(str);
+
+	char *buf = heap_caps_malloc_cast<char>(MALLOC_CAP_PREFERRED, 512);
+	char *cursor = buf;
+
+	char *tok = strtok(str, " ");
+	while(tok)
+	{
+		cursor += sprintf(cursor, "%s", tok);
+		tok = strtok(NULL, " ");
+		if (tok) cursor += sprintf(cursor, "%%20");
+	}
+
+	LOG_INFO("%s", buf);
+
+	return buf;
+}
+
 void httpServer(void *arg)
 {
 	for(;;)
 	{
 		queue_message *rxMessage;
+		char *urlNoSpaces;
 		xQueueReceive(httpQueueRx, &rxMessage, portMAX_DELAY);
 
-		esp_http_client_set_url(httpClient, rxMessage->msg_text);
+		urlNoSpaces = replaceSpaces(rxMessage->msg_text);
+
+		esp_http_client_set_url(httpClient, urlNoSpaces);
 		esp_err_t err = esp_http_client_perform(httpClient);
 		if (err == ESP_ERR_HTTP_CONNECT) sendQueueData(wifiQueueTx, WIFI_QUEUE_RX_HTTP_SERVER_ERROR, NULL, 0);
 
+		heap_caps_free(urlNoSpaces);
 		heap_caps_free(rxMessage);
 	}
 }
