@@ -39,7 +39,7 @@ void calculateTimeDelta()
 }
 
 static constexpr double lerpFactor = 3;
-void smoothLerp(double &from, double &to)
+void smoothLerp(double &from, double to)
 {
 	// Scale the lerp speed with the distance for a smooth animation
 	double distance = abs(from-to);

@@ -39,4 +39,4 @@ void calculateTimeDelta();
  * @param from Double to interpolate from.
  * @param to Destination double to interpolate to.
  */
-void smoothLerp(double &from, double &to);
+void smoothLerp(double &from, double to);
