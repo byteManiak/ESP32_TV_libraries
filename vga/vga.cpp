@@ -252,3 +252,28 @@ void VGAExtended::showDrawables()
 	// Move contents to the previous frame
 	std::swap(prevFrameDrawables, nextFrameDrawables);
 }
+
+void VGAExtended::drawSprite(Sprites spr, int index, int x, int y, float scaleFactor)
+{
+	// Drawing sprites straight to the screen is unsupported for now
+	// This is because sprite scaling is using floats, which cannot be
+	// tested for equality for use with the "adaptive" redrawing of the screen
+	if (frameBufferCount != 2) return;
+
+	Sprite s = spr.sprites[index];
+
+	float xresSpr = s.xres * scaleFactor;
+	float yresSpr = s.yres * scaleFactor;
+	float xOffset = s.points[0][0] * scaleFactor;
+	float yOffset = s.points[0][1] * scaleFactor;
+
+	float xo = x - xOffset;
+	float yo = y - yOffset;
+
+	if (xo < 0 && xo + xresSpr < 0) return;
+	if (yo < 0 && yo + yresSpr < 0) return;
+	if (xo > xres && xo + xresSpr > xres) return;
+	if (yo > yres && yo + yresSpr > yres) return;
+
+	spr.drawScaled(*this, index, x, y, scaleFactor);
+}

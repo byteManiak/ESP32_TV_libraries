@@ -1,6 +1,7 @@
 #pragma once
 
 #include <VGA/VGA6Bit.h>
+#include <Graphics/Sprites.h>
 
 #include <memory/alloc.h>
 
@@ -87,6 +88,8 @@ public:
     /**
      * @brief Alternative to show(). NOTE: This function's behaviour is different when drawing without a backbuffer.
      */
+
+    void drawSprite(Sprites spr, int index, int x, int y, float scaleFactor);
     void showDrawables();
 
 private:
