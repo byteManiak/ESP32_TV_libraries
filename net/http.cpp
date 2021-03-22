@@ -30,8 +30,8 @@ void httpServer(void *arg)
 		xQueueReceive(httpQueueRx, &rxMessage, portMAX_DELAY);
 
 		esp_http_client_set_url(httpClient, rxMessage->msg_text);
-		if (esp_http_client_perform(httpClient) != ESP_OK)
-			sendQueueData(wifiQueueTx, WIFI_QUEUE_RX_HTTP_SERVER_ERROR, NULL, portMAX_DELAY);
+		esp_err_t err = esp_http_client_perform(httpClient);
+		if (err == ESP_ERR_HTTP_CONNECT) sendQueueData(wifiQueueTx, WIFI_QUEUE_RX_HTTP_SERVER_ERROR, NULL, 0);
 
 		heap_caps_free(rxMessage);
 	}
@@ -49,8 +49,6 @@ esp_err_t initHTTP(esp_err_t (*httpEventHandler)(esp_http_client_event_t* event)
 	// URL is actually a placeholder as the WiFi network
 	// might be unavailable when the HTTP client is initialized
 	httpConfig.url = "http://127.0.0.1";
-	// Wait for 3 seconds before timing out
-	httpConfig.timeout_ms = 3000;
 	httpClient = esp_http_client_init(&httpConfig);
 	if (!httpClient) error = ESP_ERR_NO_MEM;
 
