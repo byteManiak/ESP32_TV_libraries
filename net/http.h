@@ -21,7 +21,7 @@ esp_err_t initHTTP(esp_err_t (*httpEventHandler)(esp_http_client_event_t* event)
 
 #define MAKE_REQUEST_URL(getRequest, ...) \
 	char *url = heap_caps_malloc_cast<char>(MALLOC_CAP_PREFERRED, 256); \
-	snprintf(url, 256, HTTP_SERVER_ADDRESS "/" getRequest, __VA_ARGS__);
+	snprintf(url, 256, HTTP_SERVER_ADDRESS "/" getRequest, ##__VA_ARGS__);
 
 #define GET_REQUEST_URL() (url)
 
