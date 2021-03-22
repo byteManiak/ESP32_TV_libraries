@@ -31,7 +31,7 @@ public:
 	/**
 	 * @brief Draw this submenu.
 	 */
-	void drawSubmenu();
+	virtual void drawSubmenu();
 
 	/**
 	 * @brief Draw the title of this submenu on the main menu list.
