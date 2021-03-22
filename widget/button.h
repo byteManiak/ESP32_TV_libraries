@@ -12,7 +12,7 @@ class Button : public Widget
 {
 public:
     Button(VGAExtended *vga, const char *text, int16_t x, int16_t y)
-        : Widget(vga, x, y) {strlcpy(this->text, text, 32);}
+        : Widget(vga, x, y) {strlcpy(this->text, text, 64);}
 
     void update()
     {
@@ -30,7 +30,7 @@ public:
 
     void setText(const char *text)
     {
-        strlcpy(this->text, text, 32);
+        strlcpy(this->text, text, 64);
     }
 
     void setFillColor(unsigned char color)
@@ -54,5 +54,5 @@ public:
 private:
     unsigned char fillColor = 255, textColor = 63;
     bool buttonPushed = false;
-    char text[32];
+    char text[64];
 };
