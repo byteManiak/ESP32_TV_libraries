@@ -13,8 +13,12 @@ enum TextboxState
 class Textbox : public Widget
 {
 public:
-	Textbox(VGAExtended *vga, bool textHidden = false)
-		: Widget(vga, 0, 0), textHidden{textHidden} {memset(text, 0, 65);}
+	Textbox(VGAExtended *vga, const char *topText, bool textHidden = false)
+		: Widget(vga, 0, 0), textHidden{textHidden}
+	{
+		strlcpy(this->topText, topText, 64);
+		memset(text, 0, 65);
+	}
 
 	void update()
 	{
@@ -75,12 +79,23 @@ public:
 	{
 		if (isFocused && isVisible)
 		{
-			int len = strnlen(text, 65);
-			vga->printBox(text, vga->xres/2 - len/2.f * vga->font->charWidth - 4, vga->yres/2 - vga->font->charHeight/2 - 4, 63, 63, 0);
+			int len1 = strnlen(topText, 64);
+			int len2 = strnlen(text, 65);
+			int len = std::max(len1, len2);
+
+			vga->drawRect(vga->xres/2 - len/2.f * vga->font->charWidth - 4,
+						  vga->yres/2 - vga->font->charHeight - 4,
+						  vga->font->charWidth * len + 4,
+						  vga->font->charHeight * 2 + 4, 0, true);
+			vga->setCursor(vga->xres/2 - len1/2.f * vga->font->charWidth - 2, vga->yres/2 - vga->font->charHeight - 2);
+			vga->drawText(topText);
+			vga->setCursor(vga->xres/2 - len2/2.f * vga->font->charWidth - 2, vga->yres/2);
+			vga->drawText(text);
 		}
 	}
 private:
 	bool textHidden;
 	uint8_t textCursorPos = 0;
+	char topText[64];
 	char text[65];
 };
