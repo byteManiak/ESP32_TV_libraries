@@ -65,15 +65,15 @@ public:
 		return text;
 	}
 
-    void setFocused(bool focus)
-    {
-        isFocused = focus;
+	void setFocused(bool focus)
+	{
+		isFocused = focus;
 		if (focus)
 		{
-        	textCursorPos = 0;
-        	strcpy(text, "");
+			textCursorPos = 0;
+			strcpy(text, "");
 		}
-    }
+	}
 
 	void draw(int16_t offsetX)
 	{

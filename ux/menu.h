@@ -10,7 +10,7 @@ class Menu
 {
 public:
 	Menu(VGAExtended *vga, VGAColor activeColor, VGAColor inactiveColor);
-    ~Menu() = default;
+	~Menu() = default;
 
 	void addSubMenu(Submenu *submenu);
 	void drawMenu();
