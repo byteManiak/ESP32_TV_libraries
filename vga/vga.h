@@ -68,7 +68,7 @@ public:
 	 * @brief Convert percentage to color.
 	 * @param percent Percentage as a value from 0.0 to 1.0.
 	 */
-	VGAColor getPercentGradient(double percent);
+	unsigned char getPercentGradient(double percent);
 
 	/**
 	 * @brief Alternative to fillRect() which also supports alpha blending.
