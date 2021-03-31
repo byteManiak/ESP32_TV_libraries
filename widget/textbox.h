@@ -20,6 +20,9 @@ public:
 		memset(text, 0, 65);
 	}
 
+	/**
+	 * @brief Update this widget's state.
+	 */
 	void update()
 	{
 		if (!isFocused)
@@ -60,11 +63,17 @@ public:
 		status = TEXTBOX_TYPING;
 	}
 
+	/**
+	 * @brief Get the text that the user inserted in the textbox.
+	 */
 	const char *getText()
 	{
 		return text;
 	}
 
+	/**
+	 * @brief Set this widget as the currently focused one in the parent submenu.
+	 */
 	void setFocused(bool focus)
 	{
 		isFocused = focus;
@@ -75,6 +84,10 @@ public:
 		}
 	}
 
+	/**
+	 * @brief Draw this widget on the screen
+	 * @param offsetX Offset of the entire submenu when lerp'ing it around.
+	 */
 	void draw(int16_t offsetX)
 	{
 		if (isFocused && isVisible)

@@ -2,7 +2,7 @@
 
 #include <string.h>
 
-long VGAExtended::getPercentGradient(double percent)
+VGAColor VGAExtended::getPercentGradient(double percent)
 {
 	// Get a gradient color based on a percent from 0 to 100
 	// If the percent is under 50, then the color is predominantly red

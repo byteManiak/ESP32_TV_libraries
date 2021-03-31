@@ -3,6 +3,11 @@
 #include <vector>
 #include <esp_heap_caps.h>
 
+/**
+ * @brief Allocate an object of any type and also construct it with the specified arguments
+ * @param caps Heap to allocate object on.
+ * @param args Arguments to be passed to the constructor of the object.
+ */
 template <class T, class... Args>
 T *heap_caps_malloc_construct(uint32_t caps, Args... args)
 {
@@ -19,6 +24,12 @@ T *heap_caps_malloc_construct(uint32_t caps, Args... args)
 	return obj;
 }
 
+/**
+ * @brief Allocate a pointer of any type and return the pointer of the right type to it.
+ * @param caps Heap to allocate pointer on.
+ * @param n Number of objects of the specified type the pointer can hold.
+ * Equivalent to allocating a pointer of size sizeof(T) * n.
+ */
 template <typename T>
 T *heap_caps_malloc_cast(uint32_t caps, size_t n = 1)
 {
@@ -55,6 +66,9 @@ struct PSRAM_Allocator
 #define MALLOC_CAP_PREFERRED MALLOC_CAP_DEFAULT
 #endif
 
+/**
+ * @brief Custom implementation of std::vector that can allocate to PSRAM if present.
+ */
 template <typename T>
 #if defined(CONFIG_ESP32_SPIRAM_SUPPORT)
 using heap_caps_vector = std::vector<T, PSRAM_Allocator<T>>;

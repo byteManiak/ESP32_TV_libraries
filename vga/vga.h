@@ -64,8 +64,20 @@ class VGAExtended : public VGA6Bit
 public:
 	VGAExtended() : VGA6Bit() {}
 
-	long getPercentGradient(double percent);
+	/**
+	 * @brief Convert percentage to color.
+	 * @param percent Percentage as a value from 0.0 to 1.0.
+	 */
+	VGAColor getPercentGradient(double percent);
+
+	/**
+	 * @brief Alternative to fillRect() which also supports alpha blending.
+	 */
 	void fillRectAlpha(int x, int y, int w, int h, unsigned char color);
+
+	/**
+	 * @brief Mixes fillRect() with print().
+	 */
 	void printBox(const char *text, int x, int y, unsigned char textColor = 63,
 				  unsigned char borderColor = 63, unsigned char fillColor = 255, unsigned char spacing = 2);
 
@@ -85,11 +97,19 @@ public:
 	 * @brief Alternative to print(). NOTE: This function's behaviour is different when drawing without a backbuffer.
 	 */
 	void drawFloat(float f);
+
+	/**
+	 * @brief Draw sprite with scaling. NOTE: This function's results are undefined when drawing without a backbuffer.
+	 * @param spr Sprite map to choose a single sprite from.
+	 * @param index Index of the sprite to choose from the sprite map.
+	 * @param scaleFactor Factor to scale the sprite by.
+	 * E.g. 1.0 does not scale the sprite, 2.0 scales the sprite twice its size.
+	 */
+	void drawSprite(Sprites spr, int index, int x, int y, float scaleFactor);
+
 	/**
 	 * @brief Alternative to show(). NOTE: This function's behaviour is different when drawing without a backbuffer.
 	 */
-
-	void drawSprite(Sprites spr, int index, int x, int y, float scaleFactor);
 	void showDrawables();
 
 private:

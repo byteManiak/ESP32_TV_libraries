@@ -17,11 +17,15 @@ int64_t getMillis();
 
 /**
  * @brief Get the next integer between [0,max), wrapping around to 0 if >= max.
+ * @param s Source integer from which to get the next integer in the sequence [0,max)
+ * @param max Maximum value the next integer can be.
  */
 uint32_t getNextInt(uint32_t s, uint32_t max);
 
 /**
  * @brief Get the previous integer between [0,max), wrapping around if < 0.
+ * @param s Source integer from which to get the prev integer in the sequence [0,max)
+ * @param max Maximum value the prev integer can be.
  */
 uint32_t getPrevInt(uint32_t s, uint32_t max);
 

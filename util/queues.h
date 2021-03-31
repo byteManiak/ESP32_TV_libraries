@@ -39,6 +39,7 @@ enum wifi_queue_rx_flag {
 	WIFI_QUEUE_RX_HTTP_SERVER_ERROR
 };
 
+// Queue used to communicate GET requests to the HTTP task
 extern QueueHandle_t httpQueueRx;
 
 /**

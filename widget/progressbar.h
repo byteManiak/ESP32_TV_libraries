@@ -7,8 +7,16 @@ class ProgressBar : public Widget
 public:
 	ProgressBar(VGAExtended *vga) : Widget(vga, 0, 0) {}
 
+	/**
+	 * @brief Set percentage of the progress bar.
+	 * @param percent Percentage as a value from 0.0 to 1.0.
+	 */
 	void setPercentage(double percent) { this->percent = percent; }
 
+	/**
+	 * @brief Draw this widget on the screen
+	 * @param offsetX Offset of the entire submenu when lerp'ing it around.
+	 */
 	void draw(int16_t offsetX)
 	{
 		if (isVisible)
@@ -18,6 +26,9 @@ public:
 		}
 	}
 
+	/**
+	 * @brief Update this widget's state.
+	 */
 	void update() { status = 0; }
 
 private:

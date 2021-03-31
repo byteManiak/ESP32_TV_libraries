@@ -12,7 +12,14 @@ public:
 	Menu(VGAExtended *vga, VGAColor activeColor, VGAColor inactiveColor);
 	~Menu() = default;
 
+	/**
+	 * @brief Add a submenu to the radial menu.
+	 */
 	void addSubMenu(Submenu *submenu);
+
+	/**
+	 * @brief Draw the menu as well as any attached submenus.
+	 */
 	void drawMenu();
 
 private:

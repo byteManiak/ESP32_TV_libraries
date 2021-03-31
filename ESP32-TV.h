@@ -57,6 +57,7 @@ void closeApp();
 
 /**
  * @brief Initialize Wifi and HTTP stacks.
+ * @param httpHandler Function that will act as the HTTP client.
  **/
 void initNetwork(esp_err_t httpHandler(esp_http_client_event_t *event));
 
