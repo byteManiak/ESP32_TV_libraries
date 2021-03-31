@@ -1,5 +1,7 @@
 #include <io/ps2.h>
 
+#include <ESP32-TV.h>
+
 #include <driver/uart.h>
 #include <math.h>
 
@@ -141,6 +143,7 @@ void updateKeyboard()
 
 	if (isKeyDown(Ctrl_key) && isKeyDown(Alt_key) && isKeyDown(Del_key))
 	{
+		closeApp();
 		esp_restart();
 	}
 }
