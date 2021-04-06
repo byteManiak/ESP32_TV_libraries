@@ -10,7 +10,7 @@ const char __attribute__((section(".rodata_custom_desc"))) tvAppName[64] = CONFI
 
 void initCommon(VGAExtended **vga, int xres, int yres, int r1, int r2, int g1, int g2, int b1, int b2, int hsync, int vsync, int fbcount)
 {
-	srand(time(NULL));
+	srand(esp_random());
 
 	esp_event_loop_create_default();
 
