@@ -1,3 +1,7 @@
+/*
+	Author: Mihai Daniel Ivanescu, Coventry University
+ */
+
 #include <net/wifi.h>
 
 #include <memory/alloc.h>

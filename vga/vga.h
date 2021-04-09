@@ -1,3 +1,7 @@
+/*
+	Author: Mihai Daniel Ivanescu, Coventry University
+ */
+
 #pragma once
 
 #include <VGA/VGA6Bit.h>

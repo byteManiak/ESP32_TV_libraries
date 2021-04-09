@@ -1,3 +1,7 @@
+/*
+	Author: Mihai Daniel Ivanescu, Coventry University
+ */
+
 /**
  * @file wifi.h
  * @brief Contains objects and functions used to provide WiFi functionality.

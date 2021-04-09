@@ -1,3 +1,7 @@
+/*
+	Author: Mihai Daniel Ivanescu, Coventry University
+ */
+
 #include <ESP32-TV.h>
 
 #include <stdlib.h>
