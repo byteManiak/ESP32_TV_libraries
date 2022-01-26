@@ -6,8 +6,31 @@
 
 #include <stdint.h>
 
-void initSound();
-void audioDispatchTask(void *arg);
+enum StreamType {
+	STREAM_TYPE_HTTP,
+	STREAM_TYPE_FS,
+	STREAM_TYPE_NONE
+};
+
+enum DecoderType {
+	DECODER_TYPE_MP3,
+	DECODER_TYPE_OGG,
+	DECODER_TYPE_NONE
+};
+/**
+ * @brief Initialises the audio pipeline.
+ *        The pipeline only supports one type of stream and one type of decoder active at any time.
+ * @param streamType Type of the audio pipeline's stream (e.g. from filesystem, from HTTP)
+ * @param decoderType Type of the audio pipeline's decoder (e.g. MP3 or OGG decoding)
+ */
+void initSound(StreamType streamType, DecoderType decoderType);
+
+void playSound(const char *path);
+void playMusic(const char *path, bool loop);
+void pauseMusic();
+void resumeMusic();
+void muteMusic(bool mute);
+void muteSound(bool mute);
 
 enum Note
 {

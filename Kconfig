@@ -6,6 +6,18 @@ config DEBUG_VGA_PROJ
 config DEBUG_SHOW_FPS
 	bool "Enables debug FPS counter."
 
+config AUDIO_ENABLE_MP3
+	bool "Enables MP3 support in the audio pipeline"
+
+config AUDIO_ENABLE_OGG
+	bool "Enables OGG support in the audio pipeline"
+
+config AUDIO_ENABLE_HTTP
+	bool "Enables HTTP streaming support in the audio pipeline"
+
+config AUDIO_ENABLE_FS
+	bool "Enables flash filesystem streaming support in the audio pipeline"
+
 config HTTP_SERVER_URL
 	string "Address without port of the http server storing radio links and user apps"
 	default "http://192.168.0.112"
