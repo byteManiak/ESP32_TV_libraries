@@ -70,6 +70,21 @@ void VGAExtended::drawText(const char *text)
 	else print(text);
 }
 
+void VGAExtended::drawText(const char *text, int x, int y)
+{
+	if (frameBufferCount == 1)
+	{
+		cursorX = x;
+		cursorY = y;
+		drawText(text);
+	}
+	else
+	{
+		setCursor(x, y);
+		print(text);
+	}
+}
+
 void VGAExtended::drawRect(int x, int y, int w, int h, unsigned char color, bool doFillRect)
 {
 	if (frameBufferCount == 1)
@@ -84,6 +99,11 @@ void VGAExtended::drawRect(int x, int y, int w, int h, unsigned char color, bool
 		if (!doFillRect) rect(x, y, w, h, color);
 		else fillRect(x, y, w, h, color);
 	}
+}
+
+void VGAExtended::drawRectIndexed(int x, int y, int w, int h, unsigned char color, bool doFillRect)
+{
+	drawRect(x, y, w, h, indexedColors[color], doFillRect);
 }
 
 void VGAExtended::drawFloat(float f)
@@ -280,4 +300,32 @@ void VGAExtended::drawSprite(Sprites spr, int index, int x, int y, float scaleFa
 	if (yo > yres && yo + yresSpr > yres) return;
 
 	spr.drawScaled(*this, index, x, y, scaleFactor);
+}
+
+void VGAExtended::drawTextureIndexed(unsigned char **imageData, int x, int y, int w, int h, int sx, int sy, int scaleFactor)
+{
+	for (int j = 0; j < h * scaleFactor; j++)
+	{
+		int row = j/scaleFactor;
+		for (int i = 0; i < w * scaleFactor; i++)
+		{
+			VGAColor currentPixelColor = (VGAColor)imageData[sy+row][sx+i/scaleFactor];
+			if (currentPixelColor != indexedAlphaKey) dot(x+i, y+j, indexedColors[currentPixelColor]);
+		}
+	}
+}
+
+void VGAExtended::setIndexedColors(VGAColor *colors, int colorCount)
+{
+	memcpy(indexedColors, colors, sizeof(VGAColor)*colorCount);
+}
+
+void VGAExtended::setIndexedKey(unsigned char index)
+{
+	indexedAlphaKey = index;
+}
+
+void VGAExtended::clearIndexed(unsigned char index)
+{
+	clear(indexedColors[index]);
 }
